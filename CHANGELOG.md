@@ -61,6 +61,7 @@ and this project adheres to
 
 ### Added
 
+- Implement edX open response assessment events pydantic models
 - Add a new `auth` subcommand to generate required credentials file for the LRS
 - Add an official Helm Chart (experimental)
 - Implement support for AWS S3 storage backend
@@ -82,6 +83,7 @@ and this project adheres to
 
 - Restore ES and Mongo backends ability to use client options
 
+
 ## [3.1.0] - 2022-11-17
 
 ### Added
@@ -102,7 +104,7 @@ and this project adheres to
 
 ### Added
 
-- Implement edx video browser events pydantic models
+- Implement edX video browser events pydantic models
 - Create a `post` endpoint for statements implementing the LRS spec
 - Implement support for the MongoDB database backend
 - Implement support for custom queries when using database backends `get`
@@ -148,8 +150,8 @@ and this project adheres to
 
 ### Added
 
-- Implement edx problem interaction events pydantic models
-- Implement edx textbook interaction events pydantic models
+- Implement edX problem interaction events pydantic models
+- Implement edX textbook interaction events pydantic models
 - `ws` websocket stream backend (compatible with the `fetch` command)
 - bundle `jq`, `curl` and `wget` in the `fundocker/ralph` Docker image
 - Tray: enable ralph app deployment command configuration
@@ -191,16 +193,16 @@ and this project adheres to
 - xAPI video `seeked` pydantic models
 - xAPI video `initialized` pydantic models
 - xAPI video `paused` pydantic models
-- `convert` command to transform edx events to xAPI format
+- `convert` command to transform edX events to xAPI format
 - EdX to xAPI converters for page `viewed` and`page_close` events
 - Implement core event format converter
 - xAPI video `played` pydantic models
 - xAPI page `viewed` and page `terminated` pydantic models
-- Implement edx navigational events pydantic models
-- Implement edx enrollment events pydantic models
+- Implement edX navigational events pydantic models
+- Implement edX enrollment events pydantic models
 - Install security updates in project Docker images
 - Model selector to retrieve associated pydantic model of a given event
-- `validate` command to lint edx events using pydantic models
+- `validate` command to lint edX events using pydantic models
 - Support all available bulk operation types for the elasticsearch backend
   (create, index, update, delete) using the `--es-op-type` option
 
@@ -212,7 +214,7 @@ and this project adheres to
 - Upgrade `click-option-group` to `0.5.3`
 - Upgrade `pydantic` to `1.8.2`
 - Upgrade `sentry_sdk` to `1.1.0`
-- Rename edx models
+- Rename edX models
 - Migrate model tests from factories to hypothesis strategies
 - Tray: switch from openshift to k8s (BC)
 - Tray: remove useless deployment probes
@@ -225,8 +227,8 @@ and this project adheres to
 
 ### Added
 
-- EdX server event pydantic model and factory
-- EdX page_close browser event pydantic model and factory
+- edX server event pydantic model and factory
+- edX page_close browser event pydantic model and factory
 - Tray: allow to specify a self-generated elasticsearch cluster CA certificate
 
 ### Fixed
