@@ -12,7 +12,7 @@ theme:
     name: material
     palette:
         primary: deep purple
-        
+
 markdown_extensions:
     - attr_list
     - mkdocs_click
@@ -26,6 +26,9 @@ markdown_extensions:
 nav:
     - 'Getting started':
         - index.md
+    - 'Tutorials':
+        - 'Why tutorials?': tutorials/index.md
+        - 'Ralph Helm chart for k8s': tutorials/helm.md
     - 'User guide':
         - 'Commands': commands.md
         - 'Backends': backends.md
