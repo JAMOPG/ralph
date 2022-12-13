@@ -1,6 +1,7 @@
-"""Tests for open response assessment statement event fields"""
+"""Tests for open response assessment statement event fields."""
 
 import json
+import re
 
 import pytest
 from pydantic import ValidationError
@@ -9,10 +10,34 @@ from ralph.models.edx.open_response_assessment.fields.events import (
     ORAAssessEventField,
     ORAAssessEventRubricField,
     ORACreateSubmissionEventField,
+    ORAGetPeerSubmissionEventField,
+    ORAGetSubmissionForStaffGradingEventField,
     ORASaveSubmissionEventField,
 )
 
 from tests.fixtures.hypothesis_strategies import custom_given
+
+
+@custom_given(ORAGetPeerSubmissionEventField)
+def test_models_edx_ora_get_peer_submission_event_field_with_valid_values(field):
+    """Tests that a valid `ORAGetPeerSubmissionEventField` does not raise a
+    `ValidationError`."""
+
+    assert re.match(
+        r"^block-v1:.+\+.+\+.+type@openassessment+block@[a-f0-9]{32}$", field.item_id
+    )
+
+
+@custom_given(ORAGetSubmissionForStaffGradingEventField)
+def test_models_edx_ora_get_submission_for_staff_grading_event_field_with_valid_values(
+    field,
+):
+    """Tests that a valid `ORAGetSubmissionForStaffGradingEventField` does not raise a
+    `ValidationError`."""
+
+    assert re.match(
+        r"^block-v1:.+\+.+\+.+type@openassessment+block@[a-f0-9]{32}$", field.item_id
+    )
 
 
 @custom_given(ORAAssessEventField)
@@ -77,7 +102,7 @@ def test_models_edx_ora_save_submission_event_field_with_valid_values(field):
     """
 
     if len(field.saved_response.parts) == 0:
-        assert [list(part.keys())[0] for part in field.saved_response.parts] == []
+        assert field.saved_response.parts == []
 
     else:
         assert [list(part.keys())[0] for part in field.saved_response.parts] == [

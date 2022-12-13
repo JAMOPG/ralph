@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from typing import Literal, Union
+from uuid import UUID
 
 from pydantic import Json, constr
 
@@ -9,7 +10,7 @@ from ralph.models.edx.base import AbstractBaseEventField, BaseModelWithConfig
 
 
 class ORAGetPeerSubmissionEventField(AbstractBaseEventField):
-    """Represents the `event` field of `openassessmentblock.get_peer_submission` model.
+    """Pydantic model for `openassessmentblock.get_peer_submission`.`event` field.
 
     Attributes:
         course_id (str): Consists of the course identifier including the assessment.
@@ -23,13 +24,18 @@ class ORAGetPeerSubmissionEventField(AbstractBaseEventField):
     """
 
     course_id: constr(max_length=255)
-    item_id: constr(max_length=128)
+    item_id: constr(
+        regex=(
+            r"^block-v1:.+\+.+\+.+type@openassessment"  # noqa : F722
+            r"+block@[a-f0-9]{32}$"  # noqa : F722
+        )
+    )
     requesting_student_id: str
-    submission_returned_uuid: str
+    submission_returned_uuid: Union[str, None]
 
 
 class ORAGetSubmissionForStaffGradingEventField(AbstractBaseEventField):
-    """Represents the `event` field of `openassessmentblock.get_peer_submission` model.
+    """Pydantic model for `openassessmentblock.get_submission_for_staff_grading`.`event` field.
 
     Attributes:
         course_id (str): Consists of the course identifier including the assessment.
@@ -45,15 +51,20 @@ class ORAGetSubmissionForStaffGradingEventField(AbstractBaseEventField):
     """
 
     course_id: constr(max_length=255)
-    item_id: constr(max_length=128)
+    item_id: constr(
+        regex=(
+            r"^block-v1:.+\+.+\+.+type@openassessment"  # noqa : F722
+            r"+block@[a-f0-9]{32}$"  # noqa : F722
+        )
+    )
     requesting_student_id: str
-    submission_returned_uuid: str
+    submission_returned_uuid: Union[str, None]
     requesting_staff_id: str
     type: str
 
 
 class ORAAssessEventRubricField(BaseModelWithConfig):
-    """Represents `the event.rubric` field for assessment events.
+    """Pydantic model for assessment `event`.`rubric` field.
 
     This field is defined in:
     - `openassessmentblock.peer_assess`
@@ -61,15 +72,15 @@ class ORAAssessEventRubricField(BaseModelWithConfig):
     - `openassessmentblock.staff_assess`
 
     Attributes:
-        contenthash: Consists of the identifier of the rubric that the learner used to
+        content_hash: Consists of the identifier of the rubric that the learner used to
             assess the response.
     """
 
-    contenthash: Union[constr(regex=r"^[a-f0-9]{1,40}$"), Literal[""]]  # noqa: F722
+    content_hash: constr(regex=r"^[a-f0-9]{1,40}$")  # noqa: F722
 
 
 class ORAAssessEventField(AbstractBaseEventField):
-    """Represents the core `event` field for assessment events.
+    """Pydantic model for assessment `event` field.
 
     This field is defined in:
         - `openassessmentblock.peer_assess`
@@ -92,30 +103,29 @@ class ORAAssessEventField(AbstractBaseEventField):
             response.
     """
 
-    feedback: constr(max_length=10000)
+    feedback: str
     parts: list[dict]
     rubric: ORAAssessEventRubricField
     scored_at: datetime
     scorer_id: constr(max_length=40)
-    score_type: Union[Literal["PE"], Literal["SE"], Literal["ST"]]
-    submission_uuid: constr(max_length=128)
+    score_type: Literal["PE", "SE", "ST"]
+    submission_uuid: UUID
 
 
 class ORAStaffAssessEventField(ORAAssessEventField):
-    """Represents the `event` field of `openassessmentblock.self_assess` event.
+    """Pydantic model for `openassessmentblock.staff_assess`.`event` field.
 
     Attributes:
         type (str): Consists of the type of staff grading that is being performed. Can
-            be either `regrade` value in the case of a grade override or `full-grade`
-            in the case of an included staff assessment step.
+            be either equalt to `regrade` in the case of a grade override or
+            `full-grade` in the case of an included staff assessment step.
     """
 
-    type: Union[Literal["regrade"], Literal["full-grade"]]
+    type: Literal["regrade", "full-grade"]
 
 
 class ORASubmitFeedbackOnAssessmentsEventField(AbstractBaseEventField):
-    """Represents the `event` field of
-    `openassessmentblock.submit_feedback_on_assessments` event.
+    """Pydantic modelf for `openassessmentblock.submit_feedback_on_assessments`.`event` field.
 
     Attributes:
         feedback_text (str): Consists of the learner's comments about the assessment
@@ -125,14 +135,13 @@ class ORASubmitFeedbackOnAssessmentsEventField(AbstractBaseEventField):
         submission_uuid (str): Consists of the unique identifier for for the feedback.
     """
 
-    feedback_text: constr(max_length=10000)
-    options: list
-    submission_uuid: constr(max_length=128)
+    feedback_text: str
+    options: list[str]
+    submission_uuid: UUID
 
 
 class ORACreateSubmissionEventAnswerField(BaseModelWithConfig):
-    """Represents the `event.answer` field of `openassessmentblock.save_submission`
-    model.
+    """Pydantic model for `openassessmentblock.create_submission`.`event`.`answer` field.
 
     Attributes:
         text (str): Consists of the answer field.
@@ -146,7 +155,7 @@ class ORACreateSubmissionEventAnswerField(BaseModelWithConfig):
 
 
 class ORACreateSubmissionEventField(AbstractBaseEventField):
-    """Represents the `event` field of `openassessmentblock.save_submission` model.
+    """Pydantic model for `openassessmentblock.create_submission`.`event` field.
 
     Attributes:
         answer (dict): see ORACreateSubmissionEventAnswerField.
@@ -160,15 +169,14 @@ class ORACreateSubmissionEventField(AbstractBaseEventField):
     """
 
     answer: ORACreateSubmissionEventAnswerField
-    attempt_number: Literal[1]
+    attempt_number: int
     created_at: datetime
     submitted_at: datetime
-    submission_uuid: constr(max_length=128)
+    submission_uuid: UUID
 
 
 class ORASaveSubmissionEventSavedResponseField(BaseModelWithConfig):
-    """Represents the `openassessmentblock.save_submission` event `saved_response`
-    field.
+    """Pydantic model for `openassessmentblock.save_submission`.`saved_response` field.
 
     Attributes:
         parts (list): Consists of a list of dictionaries `{"text": <response value>}`.
@@ -178,7 +186,7 @@ class ORASaveSubmissionEventSavedResponseField(BaseModelWithConfig):
 
 
 class ORASaveSubmissionEventField(AbstractBaseEventField):
-    """Represents the `event` field of `openassessmentblock.save_submission` model.
+    """Pydantic model for `openassessmentblock.save_submission`.`event` field.
 
     Attributes:
         saved_response (str): Consists of a JSON string of the users saved responses.
@@ -197,8 +205,7 @@ class ORASaveSubmissionEventField(AbstractBaseEventField):
 
 
 class ORAStudentTrainingAssessExampleEventField(AbstractBaseEventField):
-    """Represents the `event` field of `openassessment.student_training_assess_example`
-    model.
+    """Pydantic model for `openassessment.student_training_assess_example`.`event` field.
 
     Attributes:
         corrections (dict): Consists of a set of name/value pairs that identify
@@ -209,13 +216,13 @@ class ORAStudentTrainingAssessExampleEventField(AbstractBaseEventField):
         submission_uuid (str): Consists of the unique identifier of the response.
     """
 
-    corrections: dict
-    options_selected: dict
-    submission_uuid: constr(max_length=128)
+    corrections: dict[str, str]
+    options_selected: dict[str, str]
+    submission_uuid: UUID
 
 
 class ORAUploadFileEventField(BaseModelWithConfig):
-    """Represents the `event` field of `openassessment.upload_file` model.
+    """Pydantic model for `openassessment.upload_file`.`event` field.
 
     Attributes:
         fileName (str): Consists of the name of the uploaded file.

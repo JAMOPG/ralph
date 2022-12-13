@@ -1,4 +1,4 @@
-"""Tests for the open response assessment statement models"""
+"""Tests for the open response assessment statement models."""
 
 import json
 
@@ -62,8 +62,8 @@ def test_models_edx_ora_get_peer_submission_with_valid_statement(statement):
 def test_models_edx_ora_get_submission_for_staff_grading_with_valid_statement(
     statement,
 ):
-    """Tests that a `openassessmentblock.get_peer_submission` statement has the expected
-    `event_type` and `page` fields.
+    """Tests that a `openassessmentblock.get_submission_for_staff_grading` statement has
+    the expected `event_type` and `page` fields.
     """
 
     assert (

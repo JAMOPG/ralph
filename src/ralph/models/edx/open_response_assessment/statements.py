@@ -1,7 +1,10 @@
 """Open Response Assessment events model definitions."""
 
-from typing import Literal
+from typing import Literal, Union
 
+from pydantic import Json
+
+from ralph.models.edx.browser import BaseBrowserModel
 from ralph.models.edx.server import BaseServerModel
 from ralph.models.selector import selector
 
@@ -11,6 +14,7 @@ from .fields.events import (
     ORAGetPeerSubmissionEventField,
     ORAGetSubmissionForStaffGradingEventField,
     ORASaveSubmissionEventField,
+    ORAStaffAssessEventField,
     ORAStudentTrainingAssessExampleEventField,
     ORASubmitFeedbackOnAssessmentsEventField,
     ORAUploadFileEventField,
@@ -18,7 +22,10 @@ from .fields.events import (
 
 
 class ORAGetPeerSubmission(BaseServerModel):
-    """Represents the `openassessmentblock.get_peer_submission` event.
+    """Pydantic model for `openassessmentblock.get_peer_submission` statement.
+
+    The server emits this statement when a response is delivered to a learner for 
+    evaluation.
 
     Attributes:
         event (dict): See ORAGetPeerSubmissionEventField.
@@ -37,7 +44,10 @@ class ORAGetPeerSubmission(BaseServerModel):
 
 
 class ORAGetSubmissionForStaffGrading(BaseServerModel):
-    """Represents the `openassessmentblock.get_submission_for_staff_grading` event.
+    """Pydantic model for `openassessmentblock.get_submission_for_staff_grading` statement.
+
+    The server emits this statement when a course team member retrieves a learner's response 
+    for grading.
 
     Attributes:
         event (dict): See ORAGetSubmissionForStaffGradingEventField.
@@ -57,8 +67,11 @@ class ORAGetSubmissionForStaffGrading(BaseServerModel):
 
 
 class ORAPeerAssess(BaseServerModel):
-    """Represents the `openassessmentblock.peer_assess` event.
+    """Pydantic model for `openassessmentblock.peer_assess` statement.
 
+    The server emits this statement when a learner submits an assessment of a 
+    peer's response.
+    
     Attributes:
         event (dict): See ORAAssessEventField.
         event_type (str): Consists of the value `openassessmentblock.peer_assess`.
@@ -75,7 +88,9 @@ class ORAPeerAssess(BaseServerModel):
 
 
 class ORASelfAssess(BaseServerModel):
-    """Represents the `openassessmentblock.self_assess` event.
+    """Pydantic model for `openassessmentblock.self_assess` statement.
+
+    The server emits this statement when a learner submits a self-assessment.
 
     Attributes:
         event (dict): See ORAAssessEventField.
@@ -93,7 +108,10 @@ class ORASelfAssess(BaseServerModel):
 
 
 class ORAStaffAssess(BaseServerModel):
-    """Represents the `openassessmentblock.staff_assess` event.
+    """Pydantic model for `openassessmentblock.staff_assess` statement.
+
+    The server emits this statement when a course team member submits an assessment
+    of a learner's response.
 
     Attributes:
         event (dict): See ORAStaffAssessEventField.
@@ -105,13 +123,16 @@ class ORAStaffAssess(BaseServerModel):
         event_source="server", event_type="openassessmentblock.staff_assess"
     )
 
-    event: ORAAssessEventField
+    event: ORAStaffAssessEventField
     event_type: Literal["openassessmentblock.staff_assess"]
     page: Literal["x_module"]
 
 
 class ORASubmitFeedbackOnAssessments(BaseServerModel):
-    """Represents the `openassessmentblock.submit_feedback_on_assessments` event.
+    """Pydantic model for `openassessmentblock.submit_feedback_on_assessments` statement.
+
+    The server emits this statement when a learner submits a suggestion, opinion or 
+    other feedback about the assessment process.
 
     Attributes:
         event (dict): See ORASubmitFeedbackOnAssessmentsEventField.
@@ -131,7 +152,10 @@ class ORASubmitFeedbackOnAssessments(BaseServerModel):
 
 
 class ORACreateSubmission(BaseServerModel):
-    """Represents the `openassessmentblock.create_submission` event.
+    """Pydantic model for `openassessmentblock.create_submission` statement.
+
+    The server emits this statement when a learner submits a response, a peer
+    assessment or a self assessment.
 
     Attributes:
         event (dict): See ORACreateSubmissionEventField.
@@ -149,10 +173,11 @@ class ORACreateSubmission(BaseServerModel):
 
 
 class ORASaveSubmission(BaseServerModel):
-    """Represents the `openassessmentblock.save_submission` event.
+    """Pydantic model for `openassessmentblock.save_submission` statement.
 
-    This event is triggered when the user clicks on the <kbd>Save your progress</kbd>
-    button to save the current state of his response to an open assessment question.
+    The server emits this statement when the user clicks on the 
+    <kbd>Save your progress</kbd> button to save the current state of the 
+    response to an open assessment question.
 
     Attributes:
         event (str): See ORASaveSubmissionEventField.
@@ -170,7 +195,10 @@ class ORASaveSubmission(BaseServerModel):
 
 
 class ORAStudentTrainingAssessExample(BaseServerModel):
-    """Represents the `openassessment.student_training_assess_example` event.
+    """Pydantic model for `openassessment.student_training_assess_example` statement.
+
+    The server emits this event when a learner submits an assessment for an example
+    response within a training step. 
 
     Attributes:
         event (dict): See ORAStudentTrainingAssessExampleEventField.
@@ -189,19 +217,23 @@ class ORAStudentTrainingAssessExample(BaseServerModel):
     page: Literal["x_module"]
 
 
-class ORAUploadFile(BaseServerModel):
-    """Represents the `openassessment.upload_file` event.
+class ORAUploadFile(BaseBrowserModel):
+    """Pydantic model for `openassessment.upload_file` statement.
+
+    The browser emits this statement when a learner successfully uploads an image,
+    .pdf, or other file as part of a response. 
 
     Attributes:
         event (dict): See ORAUploadFileEventField.
         event_type (str): Consists of the value `openassessment.upload_file`.
-        page (str): Consists of the value `x_module`.
+        name (str): Consists of the value `openassessment.upload_file`.
     """
 
     __selector__ = selector(
-        event_source="server", event_type="openassessment.upload_file"
+        event_source="browser", event_type="openassessment.upload_file"
     )
 
-    event: ORAUploadFileEventField
+    # pylint: disable=unsubscriptable-object
+    event: Union[Json[ORAUploadFileEventField], ORAUploadFileEventField]
     event_type: Literal["openassessment.upload_file"]
-    page: Literal["x_module"]
+    name: Literal["openassessment.upload_file"]
