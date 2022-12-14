@@ -35,7 +35,8 @@ class ORAGetPeerSubmissionEventField(AbstractBaseEventField):
 
 
 class ORAGetSubmissionForStaffGradingEventField(AbstractBaseEventField):
-    """Pydantic model for `openassessmentblock.get_submission_for_staff_grading`.`event` field.
+    """Pydantic model for `openassessmentblock.get_submission_for_staff_grading`.
+    `event` field.
 
     Attributes:
         course_id (str): Consists of the course identifier including the assessment.
@@ -125,7 +126,8 @@ class ORAStaffAssessEventField(ORAAssessEventField):
 
 
 class ORASubmitFeedbackOnAssessmentsEventField(AbstractBaseEventField):
-    """Pydantic modelf for `openassessmentblock.submit_feedback_on_assessments`.`event` field.
+    """Pydantic modelf for `openassessmentblock.submit_feedback_on_assessments`.
+    `event` field.
 
     Attributes:
         feedback_text (str): Consists of the learner's comments about the assessment
@@ -141,7 +143,8 @@ class ORASubmitFeedbackOnAssessmentsEventField(AbstractBaseEventField):
 
 
 class ORACreateSubmissionEventAnswerField(BaseModelWithConfig):
-    """Pydantic model for `openassessmentblock.create_submission`.`event`.`answer` field.
+    """Pydantic model for `openassessmentblock.create_submission`.`event`.`answer`
+    field.
 
     Attributes:
         text (str): Consists of the answer field.
@@ -205,7 +208,8 @@ class ORASaveSubmissionEventField(AbstractBaseEventField):
 
 
 class ORAStudentTrainingAssessExampleEventField(AbstractBaseEventField):
-    """Pydantic model for `openassessment.student_training_assess_example`.`event` field.
+    """Pydantic model for `openassessment.student_training_assess_example`.`event`
+    field.
 
     Attributes:
         corrections (dict): Consists of a set of name/value pairs that identify

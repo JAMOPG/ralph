@@ -24,7 +24,7 @@ from .fields.events import (
 class ORAGetPeerSubmission(BaseServerModel):
     """Pydantic model for `openassessmentblock.get_peer_submission` statement.
 
-    The server emits this statement when a response is delivered to a learner for 
+    The server emits this statement when a response is delivered to a learner for
     evaluation.
 
     Attributes:
@@ -44,10 +44,11 @@ class ORAGetPeerSubmission(BaseServerModel):
 
 
 class ORAGetSubmissionForStaffGrading(BaseServerModel):
-    """Pydantic model for `openassessmentblock.get_submission_for_staff_grading` statement.
+    """Pydantic model for `openassessmentblock.get_submission_for_staff_grading`
+    statement.
 
-    The server emits this statement when a course team member retrieves a learner's response 
-    for grading.
+    The server emits this statement when a course team member retrieves a learner's
+    response for grading.
 
     Attributes:
         event (dict): See ORAGetSubmissionForStaffGradingEventField.
@@ -69,9 +70,9 @@ class ORAGetSubmissionForStaffGrading(BaseServerModel):
 class ORAPeerAssess(BaseServerModel):
     """Pydantic model for `openassessmentblock.peer_assess` statement.
 
-    The server emits this statement when a learner submits an assessment of a 
+    The server emits this statement when a learner submits an assessment of a
     peer's response.
-    
+
     Attributes:
         event (dict): See ORAAssessEventField.
         event_type (str): Consists of the value `openassessmentblock.peer_assess`.
@@ -129,9 +130,10 @@ class ORAStaffAssess(BaseServerModel):
 
 
 class ORASubmitFeedbackOnAssessments(BaseServerModel):
-    """Pydantic model for `openassessmentblock.submit_feedback_on_assessments` statement.
+    """Pydantic model for `openassessmentblock.submit_feedback_on_assessments`
+    statement.
 
-    The server emits this statement when a learner submits a suggestion, opinion or 
+    The server emits this statement when a learner submits a suggestion, opinion or
     other feedback about the assessment process.
 
     Attributes:
@@ -175,8 +177,8 @@ class ORACreateSubmission(BaseServerModel):
 class ORASaveSubmission(BaseServerModel):
     """Pydantic model for `openassessmentblock.save_submission` statement.
 
-    The server emits this statement when the user clicks on the 
-    <kbd>Save your progress</kbd> button to save the current state of the 
+    The server emits this statement when the user clicks on the
+    <kbd>Save your progress</kbd> button to save the current state of the
     response to an open assessment question.
 
     Attributes:
@@ -198,7 +200,7 @@ class ORAStudentTrainingAssessExample(BaseServerModel):
     """Pydantic model for `openassessment.student_training_assess_example` statement.
 
     The server emits this event when a learner submits an assessment for an example
-    response within a training step. 
+    response within a training step.
 
     Attributes:
         event (dict): See ORAStudentTrainingAssessExampleEventField.
@@ -221,7 +223,7 @@ class ORAUploadFile(BaseBrowserModel):
     """Pydantic model for `openassessment.upload_file` statement.
 
     The browser emits this statement when a learner successfully uploads an image,
-    .pdf, or other file as part of a response. 
+    .pdf, or other file as part of a response.
 
     Attributes:
         event (dict): See ORAUploadFileEventField.
