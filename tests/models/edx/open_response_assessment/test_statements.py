@@ -149,4 +149,4 @@ def test_models_edx_ora_upload_file_example_with_valid_statement(statement):
     """
 
     assert statement.event_type == "openassessment.upload_file"
-    assert statement.page == "x_module"
+    assert statement.name == "openassessment.upload_file"
