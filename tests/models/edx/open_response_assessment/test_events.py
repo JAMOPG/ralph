@@ -9,7 +9,6 @@ from pydantic import ValidationError
 from ralph.models.edx.open_response_assessment.fields.events import (
     ORAAssessEventField,
     ORAAssessEventRubricField,
-    ORACreateSubmissionEventField,
     ORAGetPeerSubmissionEventField,
     ORAGetSubmissionForStaffGradingEventField,
     ORASaveSubmissionEventField,
