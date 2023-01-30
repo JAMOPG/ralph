@@ -1,6 +1,7 @@
 """Configurations for Ralph."""
 
 import io
+from enum import Enum
 from pathlib import Path
 from typing import List, Tuple, Union
 
@@ -18,7 +19,7 @@ except ImportError:
     from unittest.mock import Mock
 
     get_app_dir = Mock(return_value=".")
-from pydantic import AnyUrl, BaseModel, BaseSettings, Extra
+from pydantic import AnyHttpUrl, AnyUrl, BaseModel, BaseSettings, Extra
 
 from .utils import import_string
 
@@ -280,6 +281,12 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = core_settings.LOCALE_ENCODING
 
+    class AuthBackends(Enum):
+        """Enum of the authentication backends."""
+
+        BASIC = "basic"
+        OIDC = "oidc"
+
     _CORE: CoreSettings = core_settings
     AUTH_FILE: Path = _CORE.APP_DIR / "auth.json"
     BACKENDS: BackendSettings = BackendSettings()
@@ -319,6 +326,9 @@ class Settings(BaseSettings):
         },
     }
     PARSERS: ParserSettings = ParserSettings()
+    RUNSERVER_AUTH_BACKEND: AuthBackends = AuthBackends.BASIC
+    RUNSERVER_AUTH_OIDC_AUDIENCE: str = None
+    RUNSERVER_AUTH_OIDC_ISSUER_URI: AnyHttpUrl = None
     RUNSERVER_BACKEND: Literal["clickhouse", "es", "mongo"] = "es"
     RUNSERVER_HOST: str = "0.0.0.0"  # nosec
     RUNSERVER_MAX_SEARCH_HITS_COUNT: int = 100

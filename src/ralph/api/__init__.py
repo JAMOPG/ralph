@@ -5,7 +5,8 @@ from fastapi import Depends, FastAPI
 from ralph.conf import settings
 
 from .. import __version__
-from .auth import AuthenticatedUser, authenticated_user
+from .auth import get_authenticated_user
+from .auth.user import AuthenticatedUser
 from .routers import health, statements
 
 if settings.SENTRY_DSN is not None:
@@ -23,6 +24,8 @@ app.include_router(health.router)
 
 
 @app.get("/whoami")
-async def whoami(user: AuthenticatedUser = Depends(authenticated_user)):
+async def whoami(
+    user: AuthenticatedUser = Depends(get_authenticated_user),
+):
     """Return the current user's username along with their scopes."""
     return {"username": user.username, "scopes": user.scopes}

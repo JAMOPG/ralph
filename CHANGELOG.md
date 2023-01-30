@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Add OpenID Connect authentication method
+
 ### Changed
 
 - Upgrade `sentry_sdk` to `1.22.2`
