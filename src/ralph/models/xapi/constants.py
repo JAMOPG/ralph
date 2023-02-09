@@ -15,6 +15,7 @@ ACTIVITY_PAGE_ID = Literal[  # pylint:disable=invalid-name
 ]
 
 # xAPI verbs
+VERB_ANSWERED_DISPLAY = Literal["answered"]  # pylint:disable=invalid-name
 VERB_COMPLETED_DISPLAY = Literal["completed"]  # pylint:disable=invalid-name
 VERB_INITIALIZED_DISPLAY = Literal["initialized"]  # pylint:disable=invalid-name
 VERB_INTERACTED_DISPLAY = Literal["interacted"]  # pylint:disable=invalid-name
@@ -25,6 +26,9 @@ VERB_TERMINATED_DISPLAY = Literal["terminated"]  # pylint:disable=invalid-name
 VERB_VIEWED_DISPLAY = Literal["viewed"]  # pylint:disable=invalid-name
 
 # xAPI verbs IDs
+VERB_ANSWERED_ID = Literal[  # pylint:disable=invalid-name
+    "http://adlnet.gov/expapi/verbs/answered"
+]
 VERB_COMPLETED_ID = Literal[  # pylint:disable=invalid-name
     "http://adlnet.gov/expapi/verbs/completed"
 ]
@@ -44,3 +48,4 @@ VERB_VIEWED_ID = Literal[  # pylint:disable=invalid-name
 EXTENSION_COURSE_ID = "http://adlnet.gov/expapi/activities/course"
 EXTENSION_MODULE_ID = "http://adlnet.gov/expapi/activities/module"
 EXTENSION_SCHOOL_ID = "https://w3id.org/xapi/acrossx/extensions/school"
+EXTENSION_SESSION_ID = "https://w3id.org/xapi/cmi5/context/extensions/sessionid"
