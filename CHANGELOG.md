@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Add async MongoDB backend
+
 ### Fixed
 
 - An issue with starting Ralph in pre-built Docker containers

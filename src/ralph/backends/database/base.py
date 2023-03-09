@@ -131,3 +131,43 @@ class BaseDatabase(ABC):
     @abstractmethod
     def query_statements_by_ids(self, ids: List[str]) -> List:
         """Returns the list of matching statement IDs from the database."""
+
+
+class BaseAsyncDatabase:
+    """Base async database backend interface."""
+
+    name = "base"
+    query_model = BaseQuery
+    validate_query = BaseDatabase.validate_query
+
+    @abstractmethod
+    async def status(self) -> DatabaseStatus:
+        """Implements database checks (e.g. connection, cluster status)."""
+
+    @abstractmethod
+    @enforce_query_checks
+    async def get(self, query: BaseQuery = None, chunk_size: int = 10):
+        """Yields `chunk_size` records read from the database query results."""
+
+    @abstractmethod
+    async def put(
+        self,
+        stream: Union[BinaryIO, TextIO],
+        chunk_size: int = 10,
+        ignore_errors: bool = False,
+    ) -> int:
+        """Writes `chunk_size` records from the `stream` to the database.
+
+        Returns:
+            int: The count of successfully written records.
+        """
+
+    @abstractmethod
+    async def query_statements(
+        self, params: StatementParameters
+    ) -> StatementQueryResult:
+        """Returns the statements query payload using xAPI parameters."""
+
+    @abstractmethod
+    async def query_statements_by_ids(self, ids: List[str]) -> List:
+        """Returns the list of matching statement IDs from the database."""
