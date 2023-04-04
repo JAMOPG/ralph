@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- S3 backend to unified data backend interface
+
 ### Changed
 
 - Upgrade `sentry_sdk` to `1.20.0`
