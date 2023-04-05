@@ -1,7 +1,7 @@
 """Open Response Assessment events model event fields definitions."""
 
 from datetime import datetime
-from typing import Literal, Union
+from typing import Literal, Union, Optional
 from uuid import UUID
 
 from pydantic import Json, constr
@@ -49,6 +49,8 @@ class ORAGetSubmissionForStaffGradingEventField(AbstractBaseEventField):
             available.
         requesting_staff_id (str): Consists of the course-specific anonymized user ID
             of the course team member who is retrieved the response for grading.
+        type (str): Consists of the type of staff grading that is being performed. 
+            Currently set to `full-grade`
     """
 
     course_id: constr(max_length=255)
@@ -61,7 +63,35 @@ class ORAGetSubmissionForStaffGradingEventField(AbstractBaseEventField):
     requesting_student_id: str
     submission_returned_uuid: Union[str, None]
     requesting_staff_id: str
-    type: str
+    type: Literal["full-grade"]
+
+
+class ORAAssessEventPartsCriterionField(BaseModelWithConfig):
+    """Pydantic model for assessement `event`.`parts`.`criterion` field.
+    
+    Attributes:
+        name (str): Consists of the criterion name.
+        points_possible (int): Consists of the maximum number of points 
+            allocated to the criterion.
+    """
+
+    name: str
+    points_possible: int
+
+
+class ORAAssessEventPartsField(BaseModelWithConfig):
+    """Pydantic model for assessment `event`.`parts` field.
+    
+    Attributes: 
+        option (str): Consists of the option that the learner selected for it.
+        criterion (dict): see ORAAssessEventPartsCriterionField.
+        feedback (str): Consists of feedback comments that the learner could have
+            supplied.
+    """
+    
+    option: str
+    criterion: ORAAssessEventPartsCriterionField
+    feedback: Optional[str]
 
 
 class ORAAssessEventRubricField(BaseModelWithConfig):
@@ -90,9 +120,7 @@ class ORAAssessEventField(AbstractBaseEventField):
 
     Attributes:
         feedback (str): Consists of the learner's comments about the submitted response.
-        parts (array): Consists of a list that contains for each criterion the option
-            that the learner selected for it, and any feedback comments that the learner
-            supplied.
+        parts (array): see ORAAssessEventPartsField.
         rubric (dict): see ORAPeerAssessEventRubricField.
         scored_at (datetime): Consists of the timestamp for when the assessment was
             submitted.
@@ -105,7 +133,7 @@ class ORAAssessEventField(AbstractBaseEventField):
     """
 
     feedback: str
-    parts: list[dict]
+    parts: list[ORAAssessEventPartsField]
     rubric: ORAAssessEventRubricField
     scored_at: datetime
     scorer_id: constr(max_length=40)
@@ -153,8 +181,8 @@ class ORACreateSubmissionEventAnswerField(BaseModelWithConfig):
             includes files.
     """
 
-    text: str
-    file_upload_key: str
+    text: list[dict[Literal["text"], str]]
+    file_upload_key: Optional[str]
 
 
 class ORACreateSubmissionEventField(AbstractBaseEventField):
@@ -201,10 +229,7 @@ class ORASaveSubmissionEventField(AbstractBaseEventField):
     """
 
     # pylint: disable=unsubscriptable-object
-    saved_response: Union[
-        Json[ORASaveSubmissionEventSavedResponseField],
-        ORASaveSubmissionEventSavedResponseField,
-    ]
+    saved_response: list[dict[Literal["text"], str]]
 
 
 class ORAStudentTrainingAssessExampleEventField(AbstractBaseEventField):
