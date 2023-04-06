@@ -39,28 +39,23 @@ class ORAGetSubmissionForStaffGradingEventField(AbstractBaseEventField):
     `event` field.
 
     Attributes:
-        course_id (str): Consists of the course identifier including the assessment.
         item_id (str): Consists of the locator string that identifies the problem in
             the course.
-        requesting_student_id (str): Consists of the course-specific anonymized user ID
-            of the learner who retrieved the response for peer assessment.
         submission_returned_uuid (str): Consists of the unique identifier of the
             response that was retrieved for assessment. Set to `None` if no assessment
             available.
         requesting_staff_id (str): Consists of the course-specific anonymized user ID
             of the course team member who is retrieved the response for grading.
         type (str): Consists of the type of staff grading that is being performed. 
-            Currently set to `full-grade`
+            Currently set to `full-grade`.
     """
 
-    course_id: constr(max_length=255)
     item_id: constr(
         regex=(
             r"^block-v1:.+\+.+\+.+type@openassessment"  # noqa : F722
             r"+block@[a-f0-9]{32}$"  # noqa : F722
         )
     )
-    requesting_student_id: str
     submission_returned_uuid: Union[str, None]
     requesting_staff_id: str
     type: Literal["full-grade"]
@@ -175,15 +170,16 @@ class ORACreateSubmissionEventAnswerField(BaseModelWithConfig):
     field.
 
     Attributes:
-        text (str): Consists of the answer field.
-        file_upload_key (str): Consists of AWS S3 key identifying the location of the
-            uploaded file on the Amazon S3 storage service. Only used when an answer
-            includes files.
+        parts (dict): Consists of a key-value dictionary with all answers text.
+        file_keys (list): Consists of a list of file identifiers if files are given for
+            answer.
+        files_description (list): Consists of a list of file descriptions if files are 
+            given for answer.
     """
 
-    text: list[dict[Literal["text"], str]]
-    file_upload_key: Optional[str]
-
+    parts: list[dict[Literal["text"], str]]
+    file_keys: Optional[list[str]]
+    files_descriptions: Optional[list[str]]
 
 class ORACreateSubmissionEventField(AbstractBaseEventField):
     """Pydantic model for `openassessmentblock.create_submission`.`event` field.
