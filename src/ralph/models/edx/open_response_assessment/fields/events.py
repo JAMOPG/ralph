@@ -1,10 +1,10 @@
 """Open Response Assessment events model event fields definitions."""
 
 from datetime import datetime
-from typing import Literal, Union, Optional
+from typing import Literal, Optional, Union
 from uuid import UUID
 
-from pydantic import Json, constr
+from pydantic import constr
 
 from ralph.models.edx.base import AbstractBaseEventField, BaseModelWithConfig
 
@@ -35,6 +35,7 @@ class ORAGetPeerSubmissionEventField(AbstractBaseEventField):
 
 
 class ORAGetSubmissionForStaffGradingEventField(AbstractBaseEventField):
+    # noqa: D205, D415
     """Pydantic model for `openassessmentblock.get_submission_for_staff_grading`.
     `event` field.
 
@@ -46,7 +47,7 @@ class ORAGetSubmissionForStaffGradingEventField(AbstractBaseEventField):
             available.
         requesting_staff_id (str): Consists of the course-specific anonymized user ID
             of the course team member who is retrieved the response for grading.
-        type (str): Consists of the type of staff grading that is being performed. 
+        type (str): Consists of the type of staff grading that is being performed.
             Currently set to `full-grade`.
     """
 
@@ -63,10 +64,10 @@ class ORAGetSubmissionForStaffGradingEventField(AbstractBaseEventField):
 
 class ORAAssessEventPartsCriterionField(BaseModelWithConfig):
     """Pydantic model for assessement `event`.`parts`.`criterion` field.
-    
+
     Attributes:
         name (str): Consists of the criterion name.
-        points_possible (int): Consists of the maximum number of points 
+        points_possible (int): Consists of the maximum number of points
             allocated to the criterion.
     """
 
@@ -76,14 +77,14 @@ class ORAAssessEventPartsCriterionField(BaseModelWithConfig):
 
 class ORAAssessEventPartsField(BaseModelWithConfig):
     """Pydantic model for assessment `event`.`parts` field.
-    
-    Attributes: 
+
+    Attributes:
         option (str): Consists of the option that the learner selected for it.
         criterion (dict): see ORAAssessEventPartsCriterionField.
         feedback (str): Consists of feedback comments that the learner could have
             supplied.
     """
-    
+
     option: str
     criterion: ORAAssessEventPartsCriterionField
     feedback: Optional[str]
@@ -149,6 +150,7 @@ class ORAStaffAssessEventField(ORAAssessEventField):
 
 
 class ORASubmitFeedbackOnAssessmentsEventField(AbstractBaseEventField):
+    # noqa: D205, D415
     """Pydantic modelf for `openassessmentblock.submit_feedback_on_assessments`.
     `event` field.
 
@@ -166,6 +168,7 @@ class ORASubmitFeedbackOnAssessmentsEventField(AbstractBaseEventField):
 
 
 class ORACreateSubmissionEventAnswerField(BaseModelWithConfig):
+    # noqa: D205, D415
     """Pydantic model for `openassessmentblock.create_submission`.`event`.`answer`
     field.
 
@@ -173,13 +176,14 @@ class ORACreateSubmissionEventAnswerField(BaseModelWithConfig):
         parts (dict): Consists of a key-value dictionary with all answers text.
         file_keys (list): Consists of a list of file identifiers if files are given for
             answer.
-        files_description (list): Consists of a list of file descriptions if files are 
+        files_description (list): Consists of a list of file descriptions if files are
             given for answer.
     """
 
     parts: list[dict[Literal["text"], str]]
     file_keys: Optional[list[str]]
     files_descriptions: Optional[list[str]]
+
 
 class ORACreateSubmissionEventField(AbstractBaseEventField):
     """Pydantic model for `openassessmentblock.create_submission`.`event` field.
@@ -229,6 +233,7 @@ class ORASaveSubmissionEventField(AbstractBaseEventField):
 
 
 class ORAStudentTrainingAssessExampleEventField(AbstractBaseEventField):
+    # noqa: D205, D415
     """Pydantic model for `openassessment.student_training_assess_example`.`event`
     field.
 

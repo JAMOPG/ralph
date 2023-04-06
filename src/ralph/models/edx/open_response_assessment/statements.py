@@ -44,6 +44,7 @@ class ORAGetPeerSubmission(BaseServerModel):
 
 
 class ORAGetSubmissionForStaffGrading(BaseServerModel):
+    # noqa: D205, D415
     """Pydantic model for `openassessmentblock.get_submission_for_staff_grading`
     statement.
 
@@ -130,6 +131,7 @@ class ORAStaffAssess(BaseServerModel):
 
 
 class ORASubmitFeedbackOnAssessments(BaseServerModel):
+    # noqa: D205, D415
     """Pydantic model for `openassessmentblock.submit_feedback_on_assessments`
     statement.
 
