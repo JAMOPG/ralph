@@ -23,7 +23,7 @@ from ralph.models.converter import (
 )
 from ralph.models.edx.converters.xapi.base import BaseConversionSet
 from ralph.models.edx.navigational.statements import UIPageClose
-from ralph.models.xapi.constants import VERB_TERMINATED_ID
+from ralph.models.xapi.concepts.constants.scorm_profile import VERB_TERMINATED_ID
 
 from tests.fixtures.hypothesis_strategies import custom_given
 

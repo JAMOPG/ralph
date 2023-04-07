@@ -1,19 +1,20 @@
 """Navigation xAPI event definitions."""
 
 from ...selector import selector
-from ..base import BaseXapiModel
-from ..fields.verbs import TerminatedVerbField, ViewedVerbField
-from .fields.objects import PageObjectField
+from ..base.statements import BaseXapiStatement
+from ..concepts.activity_types.activity_streams_vocabulary import PageActivityType
+from ..concepts.verbs.scorm_profile import TerminatedVerb
+from ..concepts.verbs.tincan_vocabulary import ViewedVerb
 
 
-class PageViewed(BaseXapiModel):
+class PageViewed(BaseXapiStatement):
     """Pydantic model for page viewed statement.
 
     Example: John viewed the https://www.fun-mooc.fr/ page.
 
     Attributes:
-       object (PageObjectField): See PageObjectField.
-       verb (PageViewedVerbField): See PageViewedVerbField.
+       object (dict): See PageActivityType.
+       verb (dict): See ViewedVerb.
     """
 
     __selector__ = selector(
@@ -21,18 +22,18 @@ class PageViewed(BaseXapiModel):
         verb__id="http://id.tincanapi.com/verb/viewed",
     )
 
-    object: PageObjectField
-    verb: ViewedVerbField = ViewedVerbField()
+    object: PageActivityType
+    verb: ViewedVerb = ViewedVerb()
 
 
-class PageTerminated(BaseXapiModel):
+class PageTerminated(BaseXapiStatement):
     """Pydantic model for page terminated statement.
 
     Example: John terminated the https://www.fun-mooc.fr/ page.
 
     Attributes:
-       object (PageObjectField): See PageObjectField.
-       verb (PageTerminatedVerbField): See PageTerminatedVerbField.
+       object (dict): See PageActivityType.
+       verb (dict): See TerminatedVerb.
     """
 
     __selector__ = selector(
@@ -40,5 +41,5 @@ class PageTerminated(BaseXapiModel):
         verb__id="http://adlnet.gov/expapi/verbs/terminated",
     )
 
-    object: PageObjectField
-    verb: TerminatedVerbField = TerminatedVerbField()
+    object: PageActivityType
+    verb: TerminatedVerb = TerminatedVerb()

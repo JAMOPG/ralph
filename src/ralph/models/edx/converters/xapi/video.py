@@ -8,8 +8,7 @@ from ralph.models.edx.video.statements import (
     UISeekVideo,
     UIStopVideo,
 )
-from ralph.models.xapi.constants import LANG_EN_US_DISPLAY
-from ralph.models.xapi.video.constants import (
+from ralph.models.xapi.concepts.constants.video import (
     VIDEO_EXTENSION_LENGTH,
     VIDEO_EXTENSION_PROGRESS,
     VIDEO_EXTENSION_SESSION_ID,
@@ -18,6 +17,7 @@ from ralph.models.xapi.video.constants import (
     VIDEO_EXTENSION_TIME_TO,
     VIDEO_EXTENSION_USER_AGENT,
 )
+from ralph.models.xapi.constants import LANG_EN_US_DISPLAY
 from ralph.models.xapi.video.statements import (
     VideoInitialized,
     VideoPaused,

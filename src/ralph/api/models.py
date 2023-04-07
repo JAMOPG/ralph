@@ -8,7 +8,7 @@ from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra
 
-from ..models.xapi.fields.actors import ActorField
+from ..models.xapi.base.actors import BaseXapiActor
 
 
 class ErrorDetail(BaseModel):
@@ -62,7 +62,7 @@ class LaxStatement(BaseModelWithLaxConfig):
     qualify an object as an XAPI statement.
     """
 
-    actor: ActorField
+    actor: BaseXapiActor
     id: Optional[UUID]
     object: LaxObjectField
     verb: LaxVerbField
