@@ -23,6 +23,7 @@ from pymongo import MongoClient
 from pymongo.errors import CollectionInvalid
 
 from ralph.backends.data.fs import FSDataBackend, FSDataBackendSettings
+from ralph.backends.data.s3 import S3DataBackend, S3DataBackendSettings
 from ralph.backends.database.clickhouse import ClickHouseDatabase
 from ralph.backends.database.es import ESDatabase
 from ralph.backends.database.mongo import MongoDatabase
@@ -379,6 +380,27 @@ def s3():
         )
 
     return get_s3_storage
+
+
+@pytest.fixture
+def s3_backend():
+    """Returns the `get_s3_data_backend` function."""
+    # pylint:disable=invalid-name,redefined-outer-name, unused-argument
+
+    def get_s3_data_backend():
+        """Returns an instance of S3DataBackend."""
+        settings = S3DataBackendSettings(
+            ACCESS_KEY_ID="access_key_id",
+            SECRET_ACCESS_KEY="secret_access_key",
+            SESSION_TOKEN="session_token",
+            DEFAULT_REGION="default-region",
+            DEFAULT_BUCKET_NAME="bucket_name",
+            DEFAULT_CHUNK_SIZE=4096,
+            LOCALE_ENCODING="utf8",
+        )
+        return S3DataBackend(settings)
+
+    return get_s3_data_backend
 
 
 @pytest.fixture
