@@ -748,6 +748,9 @@ def test_cli_runserver_command_environment_file_generation(monkeypatch):
                 f"RALPH_RUNSERVER_BACKEND={settings.RUNSERVER_BACKEND}\n",
                 "RALPH_BACKENDS__DATABASE__ES__INDEX=foo\n",
                 "RALPH_BACKENDS__DATABASE__ES__CLIENT_OPTIONS__verify_certs=True\n",
+                "RALPH_BACKENDS__DATABASE__CLICKHOUSE__CLIENT_OPTIONS"
+                "__date_time_input_format="
+                f"{settings.BACKENDS.DATABASE.CLICKHOUSE.CLIENT_OPTIONS.date_time_input_format}\n",  # noqa: E501 # pylint:disable=line-too-long
                 "RALPH_BACKENDS__DATABASE__CLICKHOUSE__EVENT_TABLE_NAME="
                 f"{settings.BACKENDS.DATABASE.CLICKHOUSE.EVENT_TABLE_NAME}\n",
                 "RALPH_BACKENDS__DATABASE__CLICKHOUSE__DATABASE="
@@ -756,12 +759,6 @@ def test_cli_runserver_command_environment_file_generation(monkeypatch):
                 f"{settings.BACKENDS.DATABASE.CLICKHOUSE.PORT}\n",
                 "RALPH_BACKENDS__DATABASE__CLICKHOUSE__HOST="
                 f"{settings.BACKENDS.DATABASE.CLICKHOUSE.HOST}\n",
-                "RALPH_BACKENDS__DATABASE__CLICKHOUSE__CLIENT_OPTIONS"
-                "__date_time_input_format="
-                f"{settings.BACKENDS.DATABASE.CLICKHOUSE.CLIENT_OPTIONS.date_time_input_format}\n",  # noqa: E501 # pylint:disable=line-too-long
-                "RALPH_BACKENDS__DATABASE__CLICKHOUSE__CLIENT_OPTIONS"
-                "__allow_experimental_object_type="
-                f"{settings.BACKENDS.DATABASE.CLICKHOUSE.CLIENT_OPTIONS.allow_experimental_object_type}\n",  # noqa: E501 # pylint:disable=line-too-long
                 "RALPH_BACKENDS__DATABASE__MONGO__COLLECTION="
                 f"{settings.BACKENDS.DATABASE.MONGO.COLLECTION}\n",
                 "RALPH_BACKENDS__DATABASE__MONGO__DATABASE="
