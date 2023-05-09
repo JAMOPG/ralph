@@ -1,10 +1,13 @@
 """`Virtual classroom` activity types definitions."""
 
-from ...fields.unnested_objects import ActivityObjectField, ObjectDefinitionField
+from ...base.unnested_objects import (
+    BaseXapiActivityType,
+    BaseXapiActivityTypeDefinition,
+)
 from ..constants.virtual_classroom import VIRTUAL_CLASSROOM_OBJECT_DEFINITION_TYPE
 
 
-class VirtualClassroomObjectDefinitionField(ObjectDefinitionField):
+class VirtualClassroomObjectDefinitionField(BaseXapiActivityTypeDefinition):
     """Pydantic model for virtual classroom `object`.`definition` field.
 
     Attributes:
@@ -17,7 +20,7 @@ class VirtualClassroomObjectDefinitionField(ObjectDefinitionField):
     )
 
 
-class VirtualClassroomObjectField(ActivityObjectField):
+class VirtualClassroomObjectField(BaseXapiActivityType):
     """Pydantic model for virtual classroom `object` field.
 
     Attributes:

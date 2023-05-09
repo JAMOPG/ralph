@@ -2,6 +2,12 @@
 
 # flake8: noqa
 
+from .assessment.statements import (
+    AssessmentCompleted,
+    AssessmentInitialized,
+    AssessmentLaunched,
+    AssessmentTerminated,
+)
 from .navigation.statements import PageTerminated, PageViewed
 from .video.statements import (
     VideoCompleted,
@@ -13,21 +19,4 @@ from .video.statements import (
     VideoSeeked,
     VideoTerminated,
     VideoVolumeChangeInteraction,
-)
-from .virtual_classroom.statements import (
-    VirtualClassroomAnsweredPoll,
-    VirtualClassroomInitialized,
-    VirtualClassroomJoined,
-    VirtualClassroomLeft,
-    VirtualClassroomLoweredHand,
-    VirtualClassroomMuted,
-    VirtualClassroomPostedPublicMessage,
-    VirtualClassroomRaisedHand,
-    VirtualClassroomSharedScreen,
-    VirtualClassroomStartedCamera,
-    VirtualClassroomStartedPoll,
-    VirtualClassroomStoppedCamera,
-    VirtualClassroomTerminated,
-    VirtualClassroomUnmuted,
-    VirtualClassroomUnsharedScreen
 )

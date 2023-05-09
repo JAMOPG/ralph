@@ -10,6 +10,8 @@ from ...concepts.constants.scorm_profile import (
     VERB_INITIALIZED_ID,
     VERB_INTERACTED_DISPLAY,
     VERB_INTERACTED_ID,
+    VERB_LAUNCHED_DISPLAY,
+    VERB_LAUNCHED_ID,
     VERB_TERMINATED_DISPLAY,
     VERB_TERMINATED_ID,
 )
@@ -50,6 +52,18 @@ class InteractedVerb(BaseXapiVerb):
 
     id: VERB_INTERACTED_ID = VERB_INTERACTED_ID.__args__[0]
     display: Optional[Dict[LANG_EN_US_DISPLAY, VERB_INTERACTED_DISPLAY]]
+
+
+class LaunchedVerb(BaseXapiVerb):
+    """Pydantic model for launched `verb`.
+
+    Attributes:
+        id (str): Consists of the value `http://adlnet.gov/expapi/verbs/launched`.
+        display (dict): Consists of the dictionary `{"en-US": "launched"}`.
+    """
+
+    id: VERB_LAUNCHED_ID = VERB_LAUNCHED_ID.__args__[0]
+    display: Optional[Dict[LANG_EN_US_DISPLAY, VERB_LAUNCHED_DISPLAY]]
 
 
 class TerminatedVerb(BaseXapiVerb):

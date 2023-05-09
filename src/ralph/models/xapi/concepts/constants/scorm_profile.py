@@ -15,6 +15,9 @@ VERB_INITIALIZED_ID = Literal[  # pylint:disable=invalid-name
 VERB_INTERACTED_ID = Literal[  # pylint:disable=invalid-name
     "http://adlnet.gov/expapi/verbs/interacted"
 ]
+VERB_LAUNCHED_ID = Literal[  # pylint:disable=invalid-name
+    "http://adlnet.gov/expapi/verbs/launched"
+]
 VERB_TERMINATED_ID = Literal[  # pylint:disable=invalid-name
     "http://adlnet.gov/expapi/verbs/terminated"
 ]
@@ -23,6 +26,7 @@ VERB_TERMINATED_ID = Literal[  # pylint:disable=invalid-name
 VERB_COMPLETED_DISPLAY = Literal["completed"]  # pylint:disable=invalid-name
 VERB_INITIALIZED_DISPLAY = Literal["initialized"]  # pylint:disable=invalid-name
 VERB_INTERACTED_DISPLAY = Literal["interacted"]  # pylint:disable=invalid-name
+VERB_LAUNCHED_DISPLAY = Literal["launched"]  # pylint:disable=invalid-name
 VERB_TERMINATED_DISPLAY = Literal["terminated"]  # pylint:disable=invalid-name
 
 # Activity types IRIs
