@@ -180,6 +180,9 @@ jobs:
       - run:
           name: Lint code with pydocstyle
           command: ~/.local/bin/pydocstyle
+      - run: 
+          name: Lint code with mypy
+          command: ~/.local/bin/mypy
 
   test:
     parameters:

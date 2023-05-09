@@ -187,7 +187,8 @@ lint: \
   lint-flake8 \
   lint-pylint \
   lint-bandit \
-  lint-pydocstyle
+  lint-pydocstyle \
+  lint-mypy
 .PHONY: lint
 
 lint-black: ## lint back-end python sources with black
@@ -219,6 +220,11 @@ lint-pydocstyle: ## lint Python docstrings with pydocstyle
 	@echo 'lint:pydocstyle started…'
 	@$(COMPOSE_TEST_RUN_APP) pydocstyle
 .PHONY: lint-pydocstyle
+
+lint-mypy: ## lint back-end python sources with mypy
+	@echo 'lint:mypy started…'
+	@$(COMPOSE_TEST_RUN_APP) mypy
+.PHONY: lint-mypy
 
 logs: ## display app logs (follow mode)
 	@$(COMPOSE) logs -f app
