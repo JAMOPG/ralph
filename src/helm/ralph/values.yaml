@@ -20,6 +20,14 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+dependencies:
+  mongodb:
+    enabled: false
+  clickhouse:
+    enabled: false
+  elasticsearch:
+    enabled: false
+
 podAnnotations: {}
 
 securityContext:
@@ -36,6 +44,14 @@ ingress:
   annotations:
     # kubernetes.io/ingress.class: traefik
     cert-manager.io/issuer: letsencrypt
+
+persistence:
+  enabled: true
+  storageClass: "local-storage"
+  accessModes:
+    - ReadWriteMany
+  size: 2Gi
+  existingClaim: ""
 
 affinity:
   podAntiAffinity:
@@ -84,10 +100,6 @@ ralph:
   prefix: "traefik"
   acme_enabled_route_prefix: "traefik.acme"
   secret_name: "secret-ralph"
-  volume_history:
-    size: 2Gi
-    access_modes: ReadWriteMany
-    storage_class: "local-storage"
   elastic:
     mount_ca_secret: true
     ca_secret_name: "ralph-es-ca"
