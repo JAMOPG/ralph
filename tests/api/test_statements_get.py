@@ -1,5 +1,6 @@
 """Tests for the GET statements endpoint of the Ralph API."""
 
+import hashlib
 import json
 import re
 from datetime import datetime, timedelta
@@ -70,14 +71,14 @@ def insert_clickhouse_statements(statements):
     success = backend.put(statements)
     assert success == len(statements)
 
-def create_mock_agent(id:int, ifi:str, home_page=None):
+def create_mock_agent(ifi:str, id:int, home_page_id=None):
     """Create an agent with the chosen ifi, identified by id.
     
     args:
-        id: An integer used to uniquely identify the created agent.
-            If ifi=="account", the user is unique for each homePage
         ifi: Inverse Functional Identifier. Possible values are:
             'mbox', 'mbox_sha1sum', 'openid' and 'account'.
+        id: An integer used to uniquely identify the created agent.
+            If ifi=="account", the user is unique for each homePage
         home_page (optional): The value of homePage, if ifi=="account"
     """
 
@@ -88,8 +89,13 @@ def create_mock_agent(id:int, ifi:str, home_page=None):
                 }
     
     elif ifi == "mbox_sha1sum":
-        raise NotImplementedError("create_mock_agent not implemented with ifi=mbox_sha1sum")
-    
+        hash_object = hashlib.sha1(f"mailto:user_{id}@testmail.com".encode('utf-8'))
+        mail_hash = hash_object.hexdigest()
+        return {
+            "objectType": "Agent", 
+            "mbox_sha1sum": mail_hash
+        }
+        
     elif ifi == "openid":
         return {
             "objectType": "Agent", 
@@ -97,28 +103,37 @@ def create_mock_agent(id:int, ifi:str, home_page=None):
         }
     
     elif ifi == "account":
-        if home_page is None:
-            raise ValueError("home_page must be defined if using create_mock_agent with ifi=='account'")
+        if home_page_id is None:
+            raise ValueError("home_page_id must be defined if using create_mock_agent if using ifi=='account'")
         return {
             "objectType": "Agent",
             "account": {
-                "homePage": home_page,
+                "homePage": f'http://example_{home_page_id}.com',
                 "name": f"username_{id}"
             }
         }
     else:
         raise ValueError("No valid ifi was provided to create_mock_agent")
 
+
+@pytest.mark.parametrize("ifi", ["mbox", "mbox_sha1sum", "openid", "account_same_homePage", "account_different_homePage"])
 def test_api_statements_get_statements_by_agent(
-    insert_statements_and_monkeypatch_backend, auth_credentials
+    ifi, insert_statements_and_monkeypatch_backend, auth_credentials
 ):
     """Tests the get statements API route, given an "agent" query parameter, should
     return a list of statements filtered by the given agent.
     """
     # pylint: disable=redefined-outer-name
 
-    agent_1 = create_mock_agent(1, ifi="mbox")
-    agent_2 = create_mock_agent(2, ifi="mbox")
+    if ifi == "account_same_homePage":
+        agent_1 = create_mock_agent('account', 1, home_page_id=1)
+        agent_2 = create_mock_agent('account', 2, home_page_id=1)
+    elif ifi == "account_different_homePage":
+        agent_1 = create_mock_agent('account', 1, home_page_id=1)
+        agent_2 = create_mock_agent('account', 1, home_page_id=2)
+    else:
+        agent_1 = create_mock_agent(ifi, 1)
+        agent_2 = create_mock_agent(ifi, 2)
 
     statements = [
         {
@@ -134,14 +149,10 @@ def test_api_statements_get_statements_by_agent(
     ]
     insert_statements_and_monkeypatch_backend(statements)
 
-    print('this get request')
-    print("/xAPI/statements/?agent={}".format(json.dumps(agent_1)))
     response = client.get(
         "/xAPI/statements/?agent={}".format(quote_plus(json.dumps(agent_1))),
         headers={"Authorization": f"Basic {auth_credentials}"},
     )
-
-    print(response.content)
 
     assert response.status_code == 200
     assert response.json() == {"statements": [statements[0]]}

@@ -245,15 +245,12 @@ async def get(
         if isinstance(agent, MboxActorField):
             query_params['agent__mbox'] = agent.mbox
         elif isinstance(agent, MboxSha1SumActorField):
-            query_params['agent__mboxsha1sum'] = agent.mbox_sha1sum
+            query_params['agent__mbox_sha1sum'] = agent.mbox_sha1sum
         elif isinstance(agent, OpenIdActorField):
             query_params['agent__openid'] = agent.openid
         elif isinstance(agent, AccountActorField):
             query_params['agent__account__name'] =  agent.account.name
             query_params['agent__account__homePage'] =  agent.account.homePage
-        
-    print('dingdong')
-    print(query_params)
 
     # Query Database
     try:

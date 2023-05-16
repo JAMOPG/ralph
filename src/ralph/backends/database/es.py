@@ -156,11 +156,18 @@ class ESDatabase(BaseDatabase):
             es_query_filters += [{"term": {"actor.mbox.keyword": params.agent__mbox}}]
 
         if params.agent__mbox_sha1sum:
-            es_query_filters += [{"term": {"actor.mboxsha1sum.keyword": params.agent__mbox_sha1sum}}]
+            es_query_filters += [{"term": {"actor.mbox_sha1sum.keyword": params.agent__mbox_sha1sum}}]
 
         if params.agent__openid:
             es_query_filters += [{"term": {"actor.openid.keyword": params.agent__openid}}]
 
+        # Validate account IFI
+        if (params.agent__account__name is not None) != (params.agent__account__homePage is not None):
+            raise BackendParameterException("Incomplete parameters for `account` type IFI (needs `name` and `homePage`)")
+
+        if params.agent__account__name:
+            es_query_filters += [{"term": {"actor.account.name.keyword": params.agent__account__name}}]
+            es_query_filters += [{"term": {"actor.account.homePage.keyword": params.agent__account__homePage}}]
 
         if params.verb:
             es_query_filters += [{"term": {"verb.id.keyword": params.verb}}]
