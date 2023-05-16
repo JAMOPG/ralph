@@ -1,5 +1,6 @@
 """Tests for the GET statements endpoint of the Ralph API."""
 
+import json
 import re
 from datetime import datetime, timedelta
 from urllib.parse import quote_plus
@@ -12,7 +13,9 @@ from ralph.api import app
 from ralph.backends.database.clickhouse import ClickHouseDatabase
 from ralph.backends.database.mongo import MongoDatabase
 from ralph.exceptions import BackendException
+# from ralph.models.xapi.base import BaseXapiModel
 
+from tests.fixtures.auth import create_user
 from tests.fixtures.backends import (
     CLICKHOUSE_TEST_DATABASE,
     CLICKHOUSE_TEST_HOST,
@@ -26,8 +29,11 @@ from tests.fixtures.backends import (
     get_mongo_test_backend,
 )
 
-client = TestClient(app)
 
+from typing import List
+
+
+client = TestClient(app)
 
 def insert_es_statements(es_client, statements):
     """Inserts a bunch of example statements into Elasticsearch for testing."""
@@ -64,6 +70,135 @@ def insert_clickhouse_statements(statements):
     success = backend.put(statements)
     assert success == len(statements)
 
+def create_mock_agent(id:int, ifi:str, home_page=None):
+    """Create an agent with the chosen ifi, identified by id.
+    
+    args:
+        id: An integer used to uniquely identify the created agent.
+            If ifi=="account", the user is unique for each homePage
+        ifi: Inverse Functional Identifier. Possible values are:
+            'mbox', 'mbox_sha1sum', 'openid' and 'account'.
+        home_page (optional): The value of homePage, if ifi=="account"
+    """
+
+    if ifi == "mbox":
+        return {
+                    "objectType": "Agent", 
+                    "mbox": f"mailto:user_{id}@testmail.com"
+                }
+    
+    elif ifi == "mbox_sha1sum":
+        raise NotImplementedError("create_mock_agent not implemented with ifi=mbox_sha1sum")
+    
+    elif ifi == "openid":
+        return {
+            "objectType": "Agent", 
+            "openid": f"http://user_{id}.openid.example.org"
+        }
+    
+    elif ifi == "account":
+        if home_page is None:
+            raise ValueError("home_page must be defined if using create_mock_agent with ifi=='account'")
+        return {
+            "objectType": "Agent",
+            "account": {
+                "homePage": home_page,
+                "name": f"username_{id}"
+            }
+        }
+    else:
+        raise ValueError("No valid ifi was provided to create_mock_agent")
+
+def test_api_statements_get_statements_by_agent(
+    insert_statements_and_monkeypatch_backend, auth_credentials
+):
+    """Tests the get statements API route, given an "agent" query parameter, should
+    return a list of statements filtered by the given agent.
+    """
+    # pylint: disable=redefined-outer-name
+
+    agent_1 = create_mock_agent(1, ifi="mbox")
+    agent_2 = create_mock_agent(2, ifi="mbox")
+
+    statements = [
+        {
+            "id": "be67b160-d958-4f51-b8b8-1892002dbac6",
+            "timestamp": datetime.now().isoformat(),
+            "actor": agent_1,
+        },
+        {
+            "id": "72c81e98-1763-4730-8cfc-f5ab34f1bad2",
+            "timestamp": datetime.now().isoformat(),
+            "actor": agent_2,
+        },
+    ]
+    insert_statements_and_monkeypatch_backend(statements)
+
+    print('this get request')
+    print("/xAPI/statements/?agent={}".format(json.dumps(agent_1)))
+    response = client.get(
+        "/xAPI/statements/?agent={}".format(quote_plus(json.dumps(agent_1))),
+        headers={"Authorization": f"Basic {auth_credentials}"},
+    )
+
+    print(response.content)
+
+    assert response.status_code == 200
+    assert response.json() == {"statements": [statements[0]]}
+
+
+
+# def test_api_statements_get_statements_mine(
+#     insert_statements_and_monkeypatch_backend, auth_credentials
+# ):
+#     """Tests the get statements API route, given a "mine" query parameter, should
+#     return a list of statements filtered by authority corresponding to user credentials.
+#     """
+#     # pylint: disable=redefined-outer-name
+#     statements = [
+#         {
+#             "id": "be67b160-d958-4f51-b8b8-1892002dbac6",
+#             "timestamp": datetime.now().isoformat(),
+#             "object": {
+#                 "id": "58d8bede-155f-48b1-b1ff-a41eb28c2f0b",
+#                 "objectType": "Activity",
+#             },
+#             "authority": {
+#                 "objectType": "Agent",
+#                 "account": {
+#                     "homePage": "http://www.example.com",
+#                     "name": "Alice"
+#                 }
+#             }
+#         },
+#         {
+#             "id": "72c81e98-1763-4730-8cfc-f5ab34f1bad2",
+#             "timestamp": datetime.now().isoformat(),
+#             "object": {
+#                 "id": "a2956991-200b-40a7-9548-293cdcc06c4b",
+#                 "objectType": "Activity",
+#             },
+#             "authority": {
+#                 "objectType": "Agent",
+#                 "account": {
+#                     "homePage": "http://www.example.com",
+#                     "name": "Bob"
+#                 }
+#             }
+#         },
+#     ]
+#     insert_statements_and_monkeypatch_backend(statements)
+
+#     auth_credentials = create_user()
+
+#     response = client.get(
+#         "/xAPI/statements/?mine=True",
+#         headers={"Authorization": f"Basic {auth_credentials}"},
+#     )
+
+#     assert response.status_code == 200
+#     assert response.json() == {"statements": [statements[1]]}
+#     assert False
 
 @pytest.fixture(params=["es", "mongo", "clickhouse"])
 # pylint: disable=unused-argument
@@ -176,37 +311,6 @@ def test_api_statements_get_statements_by_statement_id(
 
     assert response.status_code == 200
     assert response.json() == {"statements": [statements[1]]}
-
-
-def test_api_statements_get_statements_by_agent(
-    insert_statements_and_monkeypatch_backend, auth_credentials
-):
-    """Tests the get statements API route, given an "agent" query parameter, should
-    return a list of statements filtered by the given agent.
-    """
-    # pylint: disable=redefined-outer-name
-
-    statements = [
-        {
-            "id": "be67b160-d958-4f51-b8b8-1892002dbac6",
-            "timestamp": datetime.now().isoformat(),
-            "actor": {"account": {"name": "96d61e6c-9cdb-4926-9cff-d3a15c662999"}},
-        },
-        {
-            "id": "72c81e98-1763-4730-8cfc-f5ab34f1bad2",
-            "timestamp": datetime.now().isoformat(),
-            "actor": {"account": {"name": "cdcb1c95-dd5b-4085-8236-9c1580051155"}},
-        },
-    ]
-    insert_statements_and_monkeypatch_backend(statements)
-
-    response = client.get(
-        "/xAPI/statements/?agent=96d61e6c-9cdb-4926-9cff-d3a15c662999",
-        headers={"Authorization": f"Basic {auth_credentials}"},
-    )
-
-    assert response.status_code == 200
-    assert response.json() == {"statements": [statements[0]]}
 
 
 def test_api_statements_get_statements_by_verb(
