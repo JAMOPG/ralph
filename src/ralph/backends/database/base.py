@@ -6,12 +6,13 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum, unique
-from typing import BinaryIO, List, Literal, Optional, TextIO, Union
+from typing import BinaryIO, List, Literal, Optional, TextIO, Union, Tuple
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Json
 
 from ralph.exceptions import BackendParameterException
+from ralph.models.xapi.fields.actors import AgentActorField, AuthorityField, AccountActorField
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,11 @@ class StatementParameters:
 
     statementId: Optional[str] = None  # pylint: disable=invalid-name
     voidedStatementId: Optional[str] = None  # pylint: disable=invalid-name
-    agent: Optional[str] = None
+    agent__mbox: Optional[str] = None 
+    agent__mbox_sha1sum: Optional[str] = None 
+    agent__openid: Optional[str] = None
+    agent__account__name: Optional[str] = None
+    agent__account__homePage: Optional[str] = None
     verb: Optional[str] = None
     activity: Optional[str] = None
     registration: Optional[UUID] = None
@@ -65,7 +70,18 @@ class StatementParameters:
     ascending: Optional[bool] = False
     search_after: Optional[str] = None
     pit_id: Optional[str] = None
+    authority: Optional[AgentActorField] = None #TODO: change this to AuthorityField
+            
+    def __post_init__(self):
+        # Check that both `homePage` and `name` are provided if `account is being used`
+        if (self.agent__account__name is not None) != (self.agent__account__homePage is not None):
+            raise BackendParameterException("Invalid agent parameters: homePage and name are both required")
 
+        # Check that no more than one Inverse Functional Identifier is provided
+        if sum(x is not None for x in [self.agent__mbox, self.agent__mbox_sha1sum,
+                        self.agent__openid, self.agent__account__name]) > 1:
+            raise BackendParameterException("Invalid agent parameters: Only one identifier can be used")
+        
 
 def enforce_query_checks(method):
     """Enforce query argument type checking for methods using it."""
@@ -79,7 +95,6 @@ def enforce_query_checks(method):
         return method(*args, query=self_.validate_query(query), **kwargs)
 
     return wrapper
-
 
 class BaseDatabase(ABC):
     """Base database backend interface."""

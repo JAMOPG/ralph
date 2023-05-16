@@ -154,3 +154,5 @@ GroupActorField = Union[
     AccountGroupActorField,
 ]
 ActorField = Union[AgentActorField, GroupActorField]
+AgentField = Union[AgentActorField, GroupActorField]
+AuthorityField = Union[AgentActorField, GroupActorField]

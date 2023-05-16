@@ -41,7 +41,6 @@ class ESQuery(BaseQuery):
 
     query: Optional[dict]
 
-
 class ESDatabase(BaseDatabase):
     """Elasticsearch database backend."""
 
@@ -153,8 +152,15 @@ class ESDatabase(BaseDatabase):
         if params.statementId:
             es_query_filters += [{"term": {"_id": params.statementId}}]
 
-        if params.agent:
-            es_query_filters += [{"term": {"actor.account.name.keyword": params.agent}}]
+        if params.agent__mbox:
+            es_query_filters += [{"term": {"actor.mbox.keyword": params.agent__mbox}}]
+
+        if params.agent__mbox_sha1sum:
+            es_query_filters += [{"term": {"actor.mboxsha1sum.keyword": params.agent__mbox_sha1sum}}]
+
+        if params.agent__openid:
+            es_query_filters += [{"term": {"actor.openid.keyword": params.agent__openid}}]
+
 
         if params.verb:
             es_query_filters += [{"term": {"verb.id.keyword": params.verb}}]
@@ -165,6 +171,15 @@ class ESDatabase(BaseDatabase):
                 {"term": {"object.id.keyword": params.activity}},
             ]
 
+        # NB: This only handles case where authority is AccountActorField
+        # TODO: add switch on env parameter indicating authority handling class for AuthorityField
+        if params.authority is not None:
+            eq_query_filters += [
+                {"term": {"authority.objectType.keyword": "Agent"}},
+                {"term": {"authority.account.homePage.keyword": params.authority.account.homePage}},
+                {"term": {"authority.account.name.keyword": params.authority.account.name}},
+            ]
+                
         if params.since:
             es_query_filters += [{"range": {"timestamp": {"gt": params.since}}}]
 

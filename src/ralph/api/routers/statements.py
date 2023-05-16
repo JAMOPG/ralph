@@ -1,5 +1,6 @@
 """API routes related to statements."""
 
+import json
 import logging
 from datetime import datetime
 from typing import List, Literal, Optional, Union
@@ -15,6 +16,9 @@ from fastapi import (
     status,
 )
 
+from pydantic import parse_obj_as
+from pydantic.types import Json
+
 from ralph.api.forwarding import forward_xapi_statements, get_active_xapi_forwardings
 from ralph.backends.database.base import BaseDatabase, StatementParameters
 from ralph.conf import settings
@@ -22,6 +26,8 @@ from ralph.exceptions import BackendException, BadFormatException
 
 from ..auth import authenticated_user
 from ..models import ErrorDetail, LaxStatement
+from ralph.models.xapi.fields.actors import AgentActorField, MboxActorField, MboxSha1SumActorField, OpenIdActorField, AccountActorField
+# TODO: change MboxActorField to MboxAgentField or equivalent when new syntax is merged
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +67,8 @@ async def get(
     voidedStatementId: Optional[str] = Query(
         None, description="**Not implemented** Id of voided Statement to fetch"
     ),
-    # NB: ActorField, which is the specific type expected, is not valid as a query param
-    agent: Optional[str] = Query(
+    # NB: AgentField, which is the specific type expected, is not valid as a query param
+    agent: Optional[Json] = Query(
         None,
         description=(
             "Filter, only return Statements for which the specified "
@@ -227,16 +233,39 @@ async def get(
             ),
         )
 
+    
+    # TODO: add parameter validation (no more than 1 IFI + full account info)
+    query_params = dict(request.query_params)
+    if query_params['agent'] is not None:
+        # Transform agent to `dict` as FastAPI cannot parse JSON (seen as string)
+        agent = parse_obj_as(AgentActorField, json.loads(query_params['agent']))
+
+        query_params.pop('agent')
+
+        if isinstance(agent, MboxActorField):
+            query_params['agent__mbox'] = agent.mbox
+        elif isinstance(agent, MboxSha1SumActorField):
+            query_params['agent__mboxsha1sum'] = agent.mbox_sha1sum
+        elif isinstance(agent, OpenIdActorField):
+            query_params['agent__openid'] = agent.openid
+        elif isinstance(agent, AccountActorField):
+            query_params['agent__account__name'] =  agent.account.name
+            query_params['agent__account__homePage'] =  agent.account.homePage
+        
+    print('dingdong')
+    print(query_params)
+
     # Query Database
     try:
         query_result = DATABASE_CLIENT.query_statements(
-            StatementParameters(**{**request.query_params, "limit": limit})
+            StatementParameters(**{**query_params, "limit": limit})
         )
     except BackendException as error:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="xAPI statements query failed",
         ) from error
+
 
     # Prepare the link to get the next page of the request, while preserving the
     # consistency of search results.
