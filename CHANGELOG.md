@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Implement xAPI virtual classroom pydantic models
+
 ### Changed
 
 - Upgrade `fastapi` to `0.95.2`
@@ -30,6 +34,7 @@ GET query `agent` filtering
 as per the xAPI specification
 - Use batch/v1 api in cronjob_pipeline manifest
 - Use autoscaling/v2 in HorizontalPodAutoscaler manifest
+- 
 
 ### Fixed
 
