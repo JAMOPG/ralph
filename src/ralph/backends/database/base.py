@@ -81,7 +81,7 @@ class StatementParameters:
         if sum(x is not None for x in [self.agent__mbox, self.agent__mbox_sha1sum,
                         self.agent__openid, self.agent__account__name]) > 1:
             raise BackendParameterException("Invalid agent parameters: Only one identifier can be used")
-        
+
 
 def enforce_query_checks(method):
     """Enforce query argument type checking for methods using it."""

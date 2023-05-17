@@ -161,10 +161,6 @@ class ESDatabase(BaseDatabase):
         if params.agent__openid:
             es_query_filters += [{"term": {"actor.openid.keyword": params.agent__openid}}]
 
-        # Validate account IFI
-        if (params.agent__account__name is not None) != (params.agent__account__homePage is not None):
-            raise BackendParameterException("Incomplete parameters for `account` type IFI (needs `name` and `homePage`)")
-
         if params.agent__account__name:
             es_query_filters += [{"term": {"actor.account.name.keyword": params.agent__account__name}}]
             es_query_filters += [{"term": {"actor.account.homePage.keyword": params.agent__account__homePage}}]
