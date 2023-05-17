@@ -20,7 +20,7 @@ from pydantic import parse_obj_as
 from pydantic.types import Json
 
 from ralph.api.forwarding import forward_xapi_statements, get_active_xapi_forwardings
-from ralph.backends.database.base import BaseDatabase, StatementParameters
+from ralph.backends.database.base import BaseDatabase, StatementParameters, AgentParameters
 from ralph.conf import settings
 from ralph.exceptions import BackendException, BadFormatException
 
@@ -233,25 +233,26 @@ async def get(
             ),
         )
 
-    
-    # TODO: add parameter validation (no more than 1 IFI + full account info)
     # Parse the agent parameter (JSON) into multiple string parameters
     query_params = dict(request.query_params)
     if query_params.get('agent') is not None:
         # Transform agent to `dict` as FastAPI cannot parse JSON (seen as string)
         agent = parse_obj_as(AgentActorField, json.loads(query_params['agent']))
 
-        query_params.pop('agent')
-
+        agent_query_params = dict()
         if isinstance(agent, MboxActorField):
-            query_params['agent__mbox'] = agent.mbox
+            agent_query_params['mbox'] = agent.mbox
         elif isinstance(agent, MboxSha1SumActorField):
-            query_params['agent__mbox_sha1sum'] = agent.mbox_sha1sum
+            agent_query_params['mbox_sha1sum'] = agent.mbox_sha1sum
         elif isinstance(agent, OpenIdActorField):
-            query_params['agent__openid'] = agent.openid
+            agent_query_params['openid'] = agent.openid
         elif isinstance(agent, AccountActorField):
-            query_params['agent__account__name'] =  agent.account.name
-            query_params['agent__account__homePage'] =  agent.account.homePage
+            agent_query_params['account__name'] =  agent.account.name
+            agent_query_params['account__homePage'] =  agent.account.homePage
+        
+        # Overwrite `agent` field
+        query_params['agent'] = AgentParameters(**agent_query_params)
+
 
     # Query Database
     try:

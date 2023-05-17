@@ -192,18 +192,18 @@ class MongoDatabase(BaseDatabase):
         if params.statementId:
             mongo_query_filters.update({"_source.id": params.statementId})
 
-        if params.agent__mbox:
-            mongo_query_filters.update({"_source.actor.mbox": params.agent__mbox})
+        if params.agent.mbox:
+            mongo_query_filters.update({"_source.actor.mbox": params.agent.mbox})
 
-        if params.agent__mbox_sha1sum:
-            mongo_query_filters.update({"_source.actor.mbox_sha1sum": params.agent__mbox_sha1sum})
+        if params.agent.mbox_sha1sum:
+            mongo_query_filters.update({"_source.actor.mbox_sha1sum": params.agent.mbox_sha1sum})
 
-        if params.agent__openid:
-            mongo_query_filters.update({"_source.actor.openid": params.agent__openid})
+        if params.agent.openid:
+            mongo_query_filters.update({"_source.actor.openid": params.agent.openid})
 
-        if params.agent__account__name:
-            mongo_query_filters.update({"_source.actor.account.name": params.agent__account__name})
-            mongo_query_filters.update({"_source.actor.account.homePage": params.agent__account__homePage})
+        if params.agent.account__name:
+            mongo_query_filters.update({"_source.actor.account.name": params.agent.account__name})
+            mongo_query_filters.update({"_source.actor.account.homePage": params.agent.account__homePage})
 
         if params.verb:
             mongo_query_filters.update({"_source.verb.id": params.verb})

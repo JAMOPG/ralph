@@ -325,6 +325,56 @@ def test_api_statements_get_statements_by_agent(
     assert response.status_code == 200
     assert response.json() == {"statements": [statements[0]]}
 
+
+
+@pytest.mark.parametrize("ifi", ["mbox", "mbox_sha1sum", "openid", "account_same_home_page", "account_different_home_page"])
+def test_api_statements_get_statements_by_authority(
+    ifi, insert_statements_and_monkeypatch_backend, auth_credentials
+):
+    """Tests the get statements API route, given an "agent" query parameter, should
+    return a list of statements filtered by the given agent.
+    """
+    # pylint: disable=redefined-outer-name
+
+    # Create two distinct agents
+    if ifi == "account_same_home_page":
+        agent_1 = create_mock_agent('account', 1, home_page_id=1)
+        agent_2 = create_mock_agent('account', 2, home_page_id=1)
+    elif ifi == "account_different_home_page":
+        agent_1 = create_mock_agent('account', 1, home_page_id=1)
+        agent_2 = create_mock_agent('account', 1, home_page_id=2)
+    else:
+        agent_1 = create_mock_agent(ifi, 1)
+        agent_2 = create_mock_agent(ifi, 2)
+
+    statements = [
+        {
+            "id": "be67b160-d958-4f51-b8b8-1892002dbac6",
+            "timestamp": datetime.now().isoformat(),
+            "actor": agent_1,
+            "authority": agent_1
+        },
+        {
+            "id": "72c81e98-1763-4730-8cfc-f5ab34f1bad2",
+            "timestamp": datetime.now().isoformat(),
+            "actor": agent_1,
+            "authority": agent_2
+        },
+    ]
+    insert_statements_and_monkeypatch_backend(statements)
+
+    response = client.get(
+        "/xAPI/statements/?authority={}".format(quote_plus(json.dumps(agent_1))),
+        headers={"Authorization": f"Basic {auth_credentials}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"statements": [statements[0]]}
+
+    # TODO: write this function
+    assert False
+
+
 def test_api_statements_get_statements_by_verb(
     insert_statements_and_monkeypatch_backend, auth_credentials
 ):

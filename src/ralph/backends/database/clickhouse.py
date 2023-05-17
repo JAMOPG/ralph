@@ -271,40 +271,40 @@ class ClickHouseDatabase(BaseDatabase):  # pylint: disable=too-many-instance-att
 
     def query_statements(self, params: StatementParameters) -> StatementQueryResult:
         """Returns the results of a statements query using xAPI parameters."""
-        params = asdict(params)
+        #params = asdict(params)
         where_clauses = []
 
-        if params["statementId"]:
+        if params.statementId:
             where_clauses.append("event_id = {statementId:UUID}")
 
-        if params["agent__mbox"]:
+        if params.agent.mbox:
             where_clauses.append("event.actor.mbox = {agent__mbox:String}")
 
-        if params["agent__mbox_sha1sum"]:
+        if params.agent.mbox_sha1sum:
             where_clauses.append("event.actor.mbox_sha1sum = {agent__mbox_sha1sum:String}")
             
-        if params["agent__openid"]:
+        if params.agent.openid:
             where_clauses.append("event.actor.openid = {agent__openid:String}")
             
-        if params["agent__account__name"]:
+        if params.agent.account__name:
             where_clauses.append("event.actor.account.name = {agent__account__name:String}")
             where_clauses.append("event.actor.account.homePage = {agent__account__homePage:String}")
 
-        if params["verb"]:
+        if params.verb:
             where_clauses.append("event.verb.id = {verb:String}")
 
-        if params["activity"]:
+        if params.activity:
             where_clauses.append("event.object.objectType = 'Activity'")
             where_clauses.append("event.object.id = {activity:String}")
 
-        if params["since"]:
+        if params.since:
             where_clauses.append("emission_time > {since:DateTime64(6)}")
 
-        if params["until"]:
+        if params.until:
             where_clauses.append("emission_time <= {until:DateTime64(6)}")
 
-        if params["search_after"]:
-            search_order = ">" if params["ascending"] else "<"
+        if params.search_after:
+            search_order = ">" if params.ascending else "<"
 
             where_clauses.append(
                 f"(emission_time {search_order} "
@@ -317,11 +317,11 @@ class ClickHouseDatabase(BaseDatabase):  # pylint: disable=too-many-instance-att
                 "))"
             )
 
-        sort_order = "ASCENDING" if params["ascending"] else "DESCENDING"
+        sort_order = "ASCENDING" if params.ascending else "DESCENDING"
         order_by = f"emission_time {sort_order}, event_id {sort_order}"
 
         response = self._find(
-            where=where_clauses, parameters=params, limit=params["limit"], sort=order_by
+            where=where_clauses, parameters=asdict(params), limit=params.limit, sort=order_by
         )
         response = list(response)
 
