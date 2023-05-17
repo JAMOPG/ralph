@@ -72,13 +72,13 @@ def insert_clickhouse_statements(statements):
     assert success == len(statements)
 
 def create_mock_agent(ifi:str, id:int, home_page_id=None):
-    """Create an agent with the chosen ifi, identified by id.
+    """Create distinct mock agents with a given chosen Inverse Functional Identifer.
     
     args:
         ifi: Inverse Functional Identifier. Possible values are:
             'mbox', 'mbox_sha1sum', 'openid' and 'account'.
         id: An integer used to uniquely identify the created agent.
-            If ifi=="account", the user is unique for each homePage
+            If ifi=="account", agent equality requires same (id, home_page_id)
         home_page (optional): The value of homePage, if ifi=="account"
     """
 
@@ -114,48 +114,6 @@ def create_mock_agent(ifi:str, id:int, home_page_id=None):
         }
     else:
         raise ValueError("No valid ifi was provided to create_mock_agent")
-
-
-@pytest.mark.parametrize("ifi", ["mbox", "mbox_sha1sum", "openid", "account_same_homePage", "account_different_homePage"])
-def test_api_statements_get_statements_by_agent(
-    ifi, insert_statements_and_monkeypatch_backend, auth_credentials
-):
-    """Tests the get statements API route, given an "agent" query parameter, should
-    return a list of statements filtered by the given agent.
-    """
-    # pylint: disable=redefined-outer-name
-
-    if ifi == "account_same_homePage":
-        agent_1 = create_mock_agent('account', 1, home_page_id=1)
-        agent_2 = create_mock_agent('account', 2, home_page_id=1)
-    elif ifi == "account_different_homePage":
-        agent_1 = create_mock_agent('account', 1, home_page_id=1)
-        agent_2 = create_mock_agent('account', 1, home_page_id=2)
-    else:
-        agent_1 = create_mock_agent(ifi, 1)
-        agent_2 = create_mock_agent(ifi, 2)
-
-    statements = [
-        {
-            "id": "be67b160-d958-4f51-b8b8-1892002dbac6",
-            "timestamp": datetime.now().isoformat(),
-            "actor": agent_1,
-        },
-        {
-            "id": "72c81e98-1763-4730-8cfc-f5ab34f1bad2",
-            "timestamp": datetime.now().isoformat(),
-            "actor": agent_2,
-        },
-    ]
-    insert_statements_and_monkeypatch_backend(statements)
-
-    response = client.get(
-        "/xAPI/statements/?agent={}".format(quote_plus(json.dumps(agent_1))),
-        headers={"Authorization": f"Basic {auth_credentials}"},
-    )
-
-    assert response.status_code == 200
-    assert response.json() == {"statements": [statements[0]]}
 
 
 
@@ -323,6 +281,49 @@ def test_api_statements_get_statements_by_statement_id(
     assert response.status_code == 200
     assert response.json() == {"statements": [statements[1]]}
 
+
+
+@pytest.mark.parametrize("ifi", ["mbox", "mbox_sha1sum", "openid", "account_same_home_page", "account_different_home_page"])
+def test_api_statements_get_statements_by_agent(
+    ifi, insert_statements_and_monkeypatch_backend, auth_credentials
+):
+    """Tests the get statements API route, given an "agent" query parameter, should
+    return a list of statements filtered by the given agent.
+    """
+    # pylint: disable=redefined-outer-name
+
+    # Create two distinct agents
+    if ifi == "account_same_home_page":
+        agent_1 = create_mock_agent('account', 1, home_page_id=1)
+        agent_2 = create_mock_agent('account', 2, home_page_id=1)
+    elif ifi == "account_different_home_page":
+        agent_1 = create_mock_agent('account', 1, home_page_id=1)
+        agent_2 = create_mock_agent('account', 1, home_page_id=2)
+    else:
+        agent_1 = create_mock_agent(ifi, 1)
+        agent_2 = create_mock_agent(ifi, 2)
+
+    statements = [
+        {
+            "id": "be67b160-d958-4f51-b8b8-1892002dbac6",
+            "timestamp": datetime.now().isoformat(),
+            "actor": agent_1,
+        },
+        {
+            "id": "72c81e98-1763-4730-8cfc-f5ab34f1bad2",
+            "timestamp": datetime.now().isoformat(),
+            "actor": agent_2,
+        },
+    ]
+    insert_statements_and_monkeypatch_backend(statements)
+
+    response = client.get(
+        "/xAPI/statements/?agent={}".format(quote_plus(json.dumps(agent_1))),
+        headers={"Authorization": f"Basic {auth_credentials}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"statements": [statements[0]]}
 
 def test_api_statements_get_statements_by_verb(
     insert_statements_and_monkeypatch_backend, auth_credentials
@@ -571,9 +572,13 @@ def test_api_statements_get_statements_invalid_query_parameters(
     assert response.status_code == 400
 
     # Check for error when invalid parameters are provided with a statementId
-    for invalid_param in ["activity", "agent", "verb"]:
+    for invalid_param, value in [
+            ("activity", "activity_1"), 
+            ("agent", json.dumps(create_mock_agent('mbox', 1))),
+            ("verb", "verb_1")
+        ]:
         response = client.get(
-            f"/xAPI/statements/?{id_param}={id_1}&{invalid_param}={id_2}",
+            f"/xAPI/statements/?{id_param}={id_1}&{invalid_param}={value}",
             headers={"Authorization": f"Basic {auth_credentials}"},
         )
         assert response.status_code == 400
