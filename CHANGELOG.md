@@ -13,6 +13,7 @@ and this project adheres to
 - Upgrade `sentry_sdk` to `1.20.0`
 - LRS `/statements` `GET` method returns a code 400 with certain parameters
 as per the xAPI specification
+- `GET /statements?agent=` agent no longer accepts string as value. An [xAPI Agent](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#2421-when-the-actor-objecttype-is-agent) formated as JSON must be passed. Matching will be done using the [Inverse Functional Identifier](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#2423-inverse-functional-identifier)
 
 ## [3.5.1] - 2023-04-18
 
