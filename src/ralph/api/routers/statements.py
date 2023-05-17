@@ -235,8 +235,9 @@ async def get(
 
     
     # TODO: add parameter validation (no more than 1 IFI + full account info)
+    # Parse the agent parameter (JSON) into multiple string parameters
     query_params = dict(request.query_params)
-    if query_params['agent'] is not None:
+    if query_params.get('agent') is not None:
         # Transform agent to `dict` as FastAPI cannot parse JSON (seen as string)
         agent = parse_obj_as(AgentActorField, json.loads(query_params['agent']))
 
