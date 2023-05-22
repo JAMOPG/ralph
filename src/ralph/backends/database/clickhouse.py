@@ -271,24 +271,38 @@ class ClickHouseDatabase(BaseDatabase):  # pylint: disable=too-many-instance-att
 
     def query_statements(self, params: StatementParameters) -> StatementQueryResult:
         """Returns the results of a statements query using xAPI parameters."""
-        #params = asdict(params)
+        clickhouse_params = asdict(params)
         where_clauses = []
 
         if params.statementId:
             where_clauses.append("event_id = {statementId:UUID}")
 
-        if params.agent.mbox:
-            where_clauses.append("event.actor.mbox = {agent__mbox:String}")
+        for qp in ["agent", "authority"]: #qp : query_parameter
 
-        if params.agent.mbox_sha1sum:
-            where_clauses.append("event.actor.mbox_sha1sum = {agent__mbox_sha1sum:String}")
-            
-        if params.agent.openid:
-            where_clauses.append("event.actor.openid = {agent__openid:String}")
-            
-        if params.agent.account__name:
-            where_clauses.append("event.actor.account.name = {agent__account__name:String}")
-            where_clauses.append("event.actor.account.homePage = {agent__account__homePage:String}")
+            if qp == "agent":
+                tf = "actor" #tf: target_field
+            elif qp == "authority":
+                tf = "authority"
+
+            if params.__dict__[qp].mbox:
+                clickhouse_params[f'{qp}__mbox'] = params.__dict__[qp].mbox
+                where_clauses.append(f"event.{tf}.mbox = {{{qp}__mbox:String}}")
+
+            if params.__dict__[qp].mbox_sha1sum:
+                clickhouse_params[f'{qp}__mbox_sha1sum'] = params.__dict__[qp].mbox_sha1sum
+                where_clauses.append(f"event.{tf}.mbox_sha1sum = {{{qp}__mbox_sha1sum:String}}")
+                
+            if params.__dict__[qp].openid:
+                clickhouse_params[f'{qp}__openid'] = params.__dict__[qp].openid
+                where_clauses.append(f"event.{tf}.openid = {{{qp}__openid:String}}")
+                
+            if params.__dict__[qp].account__name:
+                clickhouse_params[f'{qp}__account__name'] = params.__dict__[qp].account__name
+                clickhouse_params[f'{qp}__account__homePage'] = params.__dict__[qp].account__homePage
+                where_clauses.append(f"event.{tf}.account.name = {{{qp}__account__name:String}}")
+                where_clauses.append(f"event.{tf}.account.homePage = {{{qp}__account__homePage:String}}")
+
+            clickhouse_params.pop(qp)
 
         if params.verb:
             where_clauses.append("event.verb.id = {verb:String}")
@@ -321,7 +335,7 @@ class ClickHouseDatabase(BaseDatabase):  # pylint: disable=too-many-instance-att
         order_by = f"emission_time {sort_order}, event_id {sort_order}"
 
         response = self._find(
-            where=where_clauses, parameters=asdict(params), limit=params.limit, sort=order_by
+            where=where_clauses, parameters=clickhouse_params, limit=params.limit, sort=order_by
         )
         response = list(response)
 

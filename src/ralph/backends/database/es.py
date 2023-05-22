@@ -154,18 +154,24 @@ class ESDatabase(BaseDatabase):
         if params.statementId:
             es_query_filters += [{"term": {"_id": params.statementId}}]
 
-        if params.agent.mbox:
-            es_query_filters += [{"term": {"actor.mbox.keyword": params.agent.mbox}}]
+        for qp in ['agent', 'authority']: # qp: query parameter
+            if qp == "agent":
+                tf = "actor" #tf: target_field
+            elif qp == "authority":
+                tf = "authority"
 
-        if params.agent.mbox_sha1sum:
-            es_query_filters += [{"term": {"actor.mbox_sha1sum.keyword": params.agent.mbox_sha1sum}}]
+            if params.__dict__[qp].mbox:
+                es_query_filters += [{"term": {f"{tf}.mbox.keyword": params.__dict__[qp].mbox}}]
 
-        if params.agent.openid:
-            es_query_filters += [{"term": {"actor.openid.keyword": params.agent.openid}}]
+            if params.__dict__[qp].mbox_sha1sum:
+                es_query_filters += [{"term": {f"{tf}.mbox_sha1sum.keyword": params.__dict__[qp].mbox_sha1sum}}]
 
-        if params.agent.account__name:
-            es_query_filters += [{"term": {"actor.account.name.keyword": params.agent.account__name}}]
-            es_query_filters += [{"term": {"actor.account.homePage.keyword": params.agent.account__homePage}}]
+            if params.__dict__[qp].openid:
+                es_query_filters += [{"term": {f"{tf}.openid.keyword": params.__dict__[qp].openid}}]
+
+            if params.__dict__[qp].account__name:
+                es_query_filters += [{"term": {f"{tf}.account.name.keyword": params.__dict__[qp].account__name}}]
+                es_query_filters += [{"term": {f"{tf}.account.homePage.keyword": params.__dict__[qp].account__homePage}}]
 
         if params.verb:
             es_query_filters += [{"term": {"verb.id.keyword": params.verb}}]

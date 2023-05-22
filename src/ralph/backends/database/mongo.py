@@ -192,18 +192,25 @@ class MongoDatabase(BaseDatabase):
         if params.statementId:
             mongo_query_filters.update({"_source.id": params.statementId})
 
-        if params.agent.mbox:
-            mongo_query_filters.update({"_source.actor.mbox": params.agent.mbox})
+        for qp in ['agent', 'authority']: # qp: query parameter
+            # Determine the field on which the query is acting
+            if qp == "agent":
+                tf = "actor" #tf: target_field
+            elif qp == "authority":
+                tf = "authority"
 
-        if params.agent.mbox_sha1sum:
-            mongo_query_filters.update({"_source.actor.mbox_sha1sum": params.agent.mbox_sha1sum})
+            if params.__dict__[qp].mbox:
+                mongo_query_filters.update({f"_source.{tf}.mbox": params.__dict__[qp].mbox})
 
-        if params.agent.openid:
-            mongo_query_filters.update({"_source.actor.openid": params.agent.openid})
+            if params.__dict__[qp].mbox_sha1sum:
+                mongo_query_filters.update({f"_source.{tf}.mbox_sha1sum": params.__dict__[qp].mbox_sha1sum})
 
-        if params.agent.account__name:
-            mongo_query_filters.update({"_source.actor.account.name": params.agent.account__name})
-            mongo_query_filters.update({"_source.actor.account.homePage": params.agent.account__homePage})
+            if params.__dict__[qp].openid:
+                mongo_query_filters.update({f"_source.{tf}.openid": params.__dict__[qp].openid})
+
+            if params.__dict__[qp].account__name:
+                mongo_query_filters.update({f"_source.{tf}.account.name": params.__dict__[qp].account__name})
+                mongo_query_filters.update({f"_source.{tf}.account.homePage": params.__dict__[qp].account__homePage})
 
         if params.verb:
             mongo_query_filters.update({"_source.verb.id": params.verb})
