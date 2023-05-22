@@ -4,6 +4,7 @@ import json
 import logging
 from datetime import datetime
 from typing import List, Literal, Optional, Union
+from urllib.parse import ParseResult, urlencode
 from uuid import UUID, uuid4
 
 from fastapi import (
@@ -15,6 +16,8 @@ from fastapi import (
     Request,
     status,
 )
+from pydantic import parse_raw_as
+from pydantic.types import Json
 
 from pydantic import parse_obj_as
 from pydantic.types import Json
@@ -23,6 +26,13 @@ from ralph.api.forwarding import forward_xapi_statements, get_active_xapi_forwar
 from ralph.backends.database.base import BaseDatabase, StatementParameters, AgentParameters
 from ralph.conf import settings
 from ralph.exceptions import BackendException, BadFormatException
+from ralph.models.xapi.fields.actors import (
+    AccountActorField,
+    AgentActorField,
+    MboxActorField,
+    MboxSha1SumActorField,
+    OpenIdActorField,
+)
 
 from ..auth import authenticated_user
 from ..models import ErrorDetail, LaxStatement
@@ -67,6 +77,7 @@ async def get(
     voidedStatementId: Optional[str] = Query(
         None, description="**Not implemented** Id of voided Statement to fetch"
     ),
+
     # NB: AgentField, which is the specific type expected, is not valid as a query param
     agent: Optional[Json] = Query(
         None,
@@ -235,6 +246,7 @@ async def get(
 
     # Parse the agent parameter (JSON) into multiple string parameters
     query_params = dict(request.query_params)
+
     if query_params.get('agent') is not None:
         # Transform agent to `dict` as FastAPI cannot parse JSON (seen as string)
         agent = parse_obj_as(AgentActorField, json.loads(query_params['agent']))
@@ -252,7 +264,6 @@ async def get(
         
         # Overwrite `agent` field
         query_params['agent'] = AgentParameters(**agent_query_params)
-
 
     # Query Database
     try:
@@ -274,14 +285,26 @@ async def get(
     response = {}
     if len(query_result.statements) == limit:
         # Search after relies on sorting info located in the last hit
-        path = request.url.components.path
-        query = request.url.components.query
+        path = request.url.path
+        query = dict(request.query_params)
+
+        query.update(
+            {
+                "pit_id": query_result.pit_id,
+                "search_after": query_result.search_after,
+            }
+        )
+
         response.update(
             {
-                "more": (
-                    f"{path}{query + '&' if query else '?'}pit_id={query_result.pit_id}"
-                    f"&search_after={query_result.search_after}"
-                )
+                "more": ParseResult(
+                    scheme="",
+                    netloc="",
+                    path=path,
+                    params="",
+                    query=urlencode(query),
+                    fragment="",
+                ).geturl(),
             }
         )
 

@@ -1,10 +1,10 @@
 """Tests for the GET statements endpoint of the Ralph API."""
 
+
 import hashlib
 import json
-import re
 from datetime import datetime, timedelta
-from urllib.parse import quote_plus
+from urllib.parse import parse_qs, quote_plus, urlparse
 
 import pytest
 from elasticsearch.helpers import bulk
@@ -169,6 +169,45 @@ def create_mock_agent(ifi:str, id:int, home_page_id=None):
 #     assert response.json() == {"statements": [statements[1]]}
 #     assert False
 
+def create_mock_agent(ifi: str, id_: int, home_page_id=None):
+    """Create distinct mock agents with a given Inverse Functional Identifier.
+
+    args:
+        ifi: Inverse Functional Identifier. Possible values are:
+            'mbox', 'mbox_sha1sum', 'openid' and 'account'.
+        id_: An integer used to uniquely identify the created agent.
+            If ifi=="account", agent equality requires same (id_, home_page_id)
+        home_page (optional): The value of homePage, if ifi=="account"
+    """
+
+    if ifi == "mbox":
+        return {"objectType": "Agent", "mbox": f"mailto:user_{id_}@testmail.com"}
+
+    if ifi == "mbox_sha1sum":
+        hash_object = hashlib.sha1(f"mailto:user_{id_}@testmail.com".encode("utf-8"))
+        mail_hash = hash_object.hexdigest()
+        return {"objectType": "Agent", "mbox_sha1sum": mail_hash}
+
+    if ifi == "openid":
+        return {"objectType": "Agent", "openid": f"http://user_{id_}.openid.exmpl.org"}
+
+    if ifi == "account":
+        if home_page_id is None:
+            raise ValueError(
+                "home_page_id must be defined if using create_mock_agent if "
+                "using ifi=='account'"
+            )
+        return {
+            "objectType": "Agent",
+            "account": {
+                "homePage": f"http://example_{home_page_id}.com",
+                "name": f"username_{id_}",
+            },
+        }
+
+    raise ValueError("No valid ifi was provided to create_mock_agent")
+
+
 @pytest.fixture(params=["es", "mongo", "clickhouse"])
 # pylint: disable=unused-argument
 def insert_statements_and_monkeypatch_backend(
@@ -282,8 +321,16 @@ def test_api_statements_get_statements_by_statement_id(
     assert response.json() == {"statements": [statements[1]]}
 
 
-
-@pytest.mark.parametrize("ifi", ["mbox", "mbox_sha1sum", "openid", "account_same_home_page", "account_different_home_page"])
+@pytest.mark.parametrize(
+    "ifi",
+    [
+        "mbox",
+        "mbox_sha1sum",
+        "openid",
+        "account_same_home_page",
+        "account_different_home_page",
+    ],
+)
 def test_api_statements_get_statements_by_agent(
     ifi, insert_statements_and_monkeypatch_backend, auth_credentials
 ):
@@ -294,11 +341,11 @@ def test_api_statements_get_statements_by_agent(
 
     # Create two distinct agents
     if ifi == "account_same_home_page":
-        agent_1 = create_mock_agent('account', 1, home_page_id=1)
-        agent_2 = create_mock_agent('account', 2, home_page_id=1)
+        agent_1 = create_mock_agent("account", 1, home_page_id=1)
+        agent_2 = create_mock_agent("account", 2, home_page_id=1)
     elif ifi == "account_different_home_page":
-        agent_1 = create_mock_agent('account', 1, home_page_id=1)
-        agent_2 = create_mock_agent('account', 1, home_page_id=2)
+        agent_1 = create_mock_agent("account", 1, home_page_id=1)
+        agent_2 = create_mock_agent("account", 1, home_page_id=2)
     else:
         agent_1 = create_mock_agent(ifi, 1)
         agent_2 = create_mock_agent(ifi, 2)
@@ -318,7 +365,7 @@ def test_api_statements_get_statements_by_agent(
     insert_statements_and_monkeypatch_backend(statements)
 
     response = client.get(
-        "/xAPI/statements/?agent={}".format(quote_plus(json.dumps(agent_1))),
+        f"/xAPI/statements/?agent={quote_plus(json.dumps(agent_1))}",
         headers={"Authorization": f"Basic {auth_credentials}"},
     )
 
@@ -519,10 +566,18 @@ def test_api_statements_get_statements_with_pagination(
     statements = [
         {
             "id": "5d345b99-517c-4b54-848e-45010904b177",
-            "timestamp": (datetime.now() - timedelta(hours=2)).isoformat(),
+            "timestamp": (datetime.now() - timedelta(hours=4)).isoformat(),
         },
         {
             "id": "be67b160-d958-4f51-b8b8-1892002dbac6",
+            "timestamp": (datetime.now() - timedelta(hours=3)).isoformat(),
+        },
+        {
+            "id": "be67b160-d958-4f51-b8b8-1892002dbac5",
+            "timestamp": (datetime.now() - timedelta(hours=2)).isoformat(),
+        },
+        {
+            "id": "be67b160-d958-4f51-b8b8-1892002dbac4",
             "timestamp": (datetime.now() - timedelta(hours=1)).isoformat(),
         },
         {
@@ -538,9 +593,88 @@ def test_api_statements_get_statements_with_pagination(
         "/xAPI/statements/", headers={"Authorization": f"Basic {auth_credentials}"}
     )
     assert first_response.status_code == 200
+    assert first_response.json()["statements"] == [statements[4], statements[3]]
+    more = urlparse(first_response.json()["more"])
+    more_query_params = parse_qs(more.query)
+    assert more.path == "/xAPI/statements/"
+    assert all(key in more_query_params for key in ("pit_id", "search_after"))
+
+    # Second response gets the missing result from the first response.
+    second_response = client.get(
+        first_response.json()["more"],
+        headers={"Authorization": f"Basic {auth_credentials}"},
+    )
+    assert second_response.status_code == 200
+    assert second_response.json()["statements"] == [statements[2], statements[1]]
+    more = urlparse(first_response.json()["more"])
+    more_query_params = parse_qs(more.query)
+    assert more.path == "/xAPI/statements/"
+    assert all(key in more_query_params for key in ("pit_id", "search_after"))
+
+    # Third response gets the missing result from the first response
+    third_response = client.get(
+        second_response.json()["more"],
+        headers={"Authorization": f"Basic {auth_credentials}"},
+    )
+    assert third_response.status_code == 200
+    assert third_response.json() == {"statements": [statements[0]]}
+
+
+def test_api_statements_get_statements_with_pagination_and_query(
+    monkeypatch, insert_statements_and_monkeypatch_backend, auth_credentials
+):
+    """Tests the get statements API route, given a request with a query parameter
+    leading to more results than can fit on the first page, should return a list
+    of statements non exceeding the page limit and include a "more" property with
+    a link to get the next page of results.
+    """
+    # pylint: disable=redefined-outer-name
+
+    monkeypatch.setattr(
+        "ralph.api.routers.statements.settings.RUNSERVER_MAX_SEARCH_HITS_COUNT", 2
+    )
+
+    statements = [
+        {
+            "id": "be67b160-d958-4f51-b8b8-1892002dbac6",
+            "verb": {
+                "id": "https://w3id.org/xapi/video/verbs/played",
+                "display": {"en-US": "played"},
+            },
+            "timestamp": (datetime.now() - timedelta(hours=2)).isoformat(),
+        },
+        {
+            "id": "be67b160-d958-4f51-b8b8-1892002dbac1",
+            "verb": {
+                "id": "https://w3id.org/xapi/video/verbs/played",
+                "display": {"en-US": "played"},
+            },
+            "timestamp": (datetime.now() - timedelta(hours=1)).isoformat(),
+        },
+        {
+            "id": "72c81e98-1763-4730-8cfc-f5ab34f1bad2",
+            "verb": {
+                "id": "https://w3id.org/xapi/video/verbs/played",
+                "display": {"en-US": "played"},
+            },
+            "timestamp": datetime.now().isoformat(),
+        },
+    ]
+    insert_statements_and_monkeypatch_backend(statements)
+
+    # First response gets the first two results, with a "more" entry as
+    # we have more results to return on a later page.
+    first_response = client.get(
+        "/xAPI/statements/?verb="
+        + quote_plus("https://w3id.org/xapi/video/verbs/played"),
+        headers={"Authorization": f"Basic {auth_credentials}"},
+    )
+    assert first_response.status_code == 200
     assert first_response.json()["statements"] == [statements[2], statements[1]]
-    more_regex = re.compile(r"^/xAPI/statements/\?pit_id=.*&search_after=.*$")
-    assert more_regex.match(first_response.json()["more"])
+    more = urlparse(first_response.json()["more"])
+    more_query_params = parse_qs(more.query)
+    assert more.path == "/xAPI/statements/"
+    assert all(key in more_query_params for key in ("verb", "pit_id", "search_after"))
 
     # Second response gets the missing result from the first response.
     second_response = client.get(
@@ -623,10 +757,10 @@ def test_api_statements_get_statements_invalid_query_parameters(
 
     # Check for error when invalid parameters are provided with a statementId
     for invalid_param, value in [
-            ("activity", "activity_1"), 
-            ("agent", json.dumps(create_mock_agent('mbox', 1))),
-            ("verb", "verb_1")
-        ]:
+        ("activity", "activity_1"),
+        ("agent", json.dumps(create_mock_agent("mbox", 1))),
+        ("verb", "verb_1"),
+    ]:
         response = client.get(
             f"/xAPI/statements/?{id_param}={id_1}&{invalid_param}={value}",
             headers={"Authorization": f"Basic {auth_credentials}"},

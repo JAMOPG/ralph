@@ -10,10 +10,27 @@ and this project adheres to
 
 ### Changed
 
-- Upgrade `sentry_sdk` to `1.20.0`
+- Force a valid (JSON-formatted) IFI to be passed for the `/statements` 
+GET query `agent` filtering
+
+## [3.6.0] - 2023-05-17
+
+### Added
+
+- Allow to ignore health check routes for Sentry transactions
+
+### Changed
+
+- Upgrade `sentry_sdk` to `1.22.2`
+- Upgrade `uvicorn` to `0.22.0`
 - LRS `/statements` `GET` method returns a code 400 with certain parameters
 as per the xAPI specification
-- `GET /statements?agent=` agent no longer accepts string as value. An [xAPI Agent](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#2421-when-the-actor-objecttype-is-agent) formated as JSON must be passed. Matching will be done using the [Inverse Functional Identifier](https://github.com/adlnet/xAPI-Spec/blob/master/xAPI-Data.md#2423-inverse-functional-identifier)
+- Use batch/v1 api in cronjob_pipeline manifest
+- Use autoscaling/v2 in HorizontalPodAutoscaler manifest
+
+### Fixed
+
+- Fix the `more` IRL building in LRS `/statements` GET requests
 
 ## [3.5.1] - 2023-04-18
 
@@ -21,8 +38,8 @@ as per the xAPI specification
 
 - Upgrade `httpx` to `0.24.0`
 - Upgrade `fastapi` to `0.95.1`
-- Upgrade `sentry_sdk` to `1.21.1`
-- Upgrade `uvicorn` to `0.22.0`
+- Upgrade `sentry_sdk` to `1.19.1`
+- Upgrade `uvicorn` to `0.21.1`
 
 ### Fixed
 
@@ -282,7 +299,8 @@ as per the xAPI specification
 - Add optional sentry integration
 - Distribute Arnold's tray to deploy Ralph in a k8s cluster as cronjobs
 
-[unreleased]: https://github.com/openfun/ralph/compare/v3.5.1...master
+[unreleased]: https://github.com/openfun/ralph/compare/v3.6.0...master
+[3.6.0]: https://github.com/openfun/ralph/compare/v3.5.1...v3.6.0
 [3.5.1]: https://github.com/openfun/ralph/compare/v3.5.0...v3.5.1
 [3.5.0]: https://github.com/openfun/ralph/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/openfun/ralph/compare/v3.3.0...v3.4.0

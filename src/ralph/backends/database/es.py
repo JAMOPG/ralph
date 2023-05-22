@@ -147,6 +147,8 @@ class ESDatabase(BaseDatabase):
 
     def query_statements(self, params: StatementParameters) -> StatementQueryResult:
         """Returns the results of a statements query using xAPI parameters."""
+        # pylint: disable=too-many-branches
+
         es_query_filters = []
 
         if params.statementId:
