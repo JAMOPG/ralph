@@ -21,6 +21,7 @@ from httpx import AsyncClient, ConnectError
 from pymongo import MongoClient
 from pymongo.errors import CollectionInvalid
 
+from ralph.backends.data.es import ESDataBackend
 from ralph.backends.data.fs import FSDataBackend, FSDataBackendSettings
 from ralph.backends.data.ldp import LDPDataBackend
 from ralph.backends.database.clickhouse import ClickHouseDatabase
@@ -334,6 +335,24 @@ def ldp_backend(settings_fs):
         return LDPDataBackend(settings)
 
     return get_ldp_data_backend
+
+
+@pytest.fixture
+def es_backend(es):
+    """Returns the `get_es_data_backend` function."""
+    # pylint: disable=invalid-name,redefined-outer-name,unused-argument
+
+    def get_es_data_backend():
+        """Returns an instance of ESDataBackend."""
+        settings = ESDataBackend.settings_class(
+            CLIENT_OPTIONS={"ca_certs": None, "verify_certs": None},
+            DEFAULT_INDEX=ES_TEST_INDEX,
+            HOSTS=ES_TEST_HOSTS,
+            LOCALE_ENCODING="utf8",
+        )
+        return ESDataBackend(settings)
+
+    return get_es_data_backend
 
 
 @pytest.fixture

@@ -8,6 +8,7 @@ from .fixtures.auth import auth_credentials  # noqa: F401
 from .fixtures.backends import (  # noqa: F401
     clickhouse,
     es,
+    es_backend,
     es_data_stream,
     es_forwarding,
     events,
