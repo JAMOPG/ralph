@@ -15,6 +15,7 @@ and this project adheres to
 - Upgrade `httpx` to `0.24.1`
 - Force a valid (JSON-formatted) IFI to be passed for the `/statements` 
 GET query `agent` filtering
+- Cache the HTTP Basic auth credentials to improve API response time   
 
 ## [3.6.0] - 2023-05-17
 

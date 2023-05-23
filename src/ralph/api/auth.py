@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import List
 
 import bcrypt
+from cachetools import TTLCache, cached
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel, root_validator
@@ -108,6 +109,13 @@ def get_stored_credentials(auth_file: Path) -> ServerUsersCredentials:
     return ServerUsersCredentials.parse_file(auth_file)
 
 
+@cached(
+    TTLCache(maxsize=10, ttl=3600),
+    key=lambda credentials: (
+        credentials.username,
+        credentials.password,
+    ),
+)
 def authenticated_user(credentials: HTTPBasicCredentials = Depends(security)):
     """Checks valid auth parameters.
 
